@@ -6,7 +6,7 @@
 
 - 前端框架：Vue 3.0
 - 构建工具：Vite
-- UI 框架：Ant Design Mobile
+- UI 框架：Vant (https://vant-ui.github.io/vant)
 - 图标库：FontAwesome
 - 状态管理：Pinia
 - 路由：Vue Router
@@ -27,7 +27,7 @@ npm install
 # 安装核心功能依赖
 npm install vue-router@4
 npm install pinia
-npm install ant-design-vue
+npm install antd-mobile
 npm install @fortawesome/fontawesome-free
 npm install axios
 npm install lodash-es

@@ -1,18 +1,54 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { Tabbar, TabbarItem } from 'vant'
+
+const router = useRouter()
+const route = useRoute()
+const active = ref(0)
+
+const tabs = [
+  {
+    name: '首页',
+    icon: 'home-o',
+    path: '/'
+  },
+  {
+    name: '复习',
+    icon: 'records',
+    path: '/review'
+  },
+  {
+    name: '管理',
+    icon: 'setting-o',
+    path: '/manage'
+  },
+  {
+    name: '统计',
+    icon: 'chart-trending-o',
+    path: '/statistics'
+  }
+]
+
+const onChange = (index) => {
+  router.push(tabs[index].path)
+}
 </script>
 
 <template>
   <div class="app">
-    <nav class="nav">
-      <router-link to="/" class="nav-item">首页</router-link>
-      <router-link to="/review" class="nav-item">复习</router-link>
-      <router-link to="/manage" class="nav-item">管理</router-link>
-      <router-link to="/statistics" class="nav-item">统计</router-link>
-    </nav>
     <main class="main">
       <router-view></router-view>
     </main>
+    <Tabbar v-model="active" @change="onChange">
+      <TabbarItem 
+        v-for="(tab, index) in tabs" 
+        :key="index"
+        :icon="tab.icon"
+      >
+        {{ tab.name }}
+      </TabbarItem>
+    </Tabbar>
   </div>
 </template>
 
@@ -36,33 +72,13 @@ body {
   flex-direction: column;
 }
 
-.nav {
-  display: flex;
-  justify-content: space-around;
-  padding: 15px;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-.nav-item {
-  text-decoration: none;
-  color: #666;
-  padding: 8px 12px;
-  border-radius: 4px;
-}
-
-.nav-item.router-link-active {
-  color: #1890ff;
-  background-color: #e6f7ff;
-}
-
 .main {
   flex: 1;
   padding: 20px;
   padding-bottom: 70px; /* 为底部导航留出空间 */
+}
+
+:root {
+  --van-primary-color: #1890ff;
 }
 </style>

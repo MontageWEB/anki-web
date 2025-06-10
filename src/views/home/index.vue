@@ -12,8 +12,8 @@
       </div>
     </div>
     <div class="actions">
-      <button @click="startReview">开始复习</button>
-      <button @click="manageCards">管理卡片</button>
+      <van-button type="primary" block @click="startReview">开始复习</van-button>
+      <van-button block @click="manageCards">管理卡片</van-button>
     </div>
   </div>
 </template>
@@ -21,6 +21,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Button as VanButton } from 'vant'
 
 const router = useRouter()
 const todayReview = ref(0)
@@ -59,18 +60,5 @@ const manageCards = () => {
   gap: 10px;
   max-width: 300px;
   margin: 0 auto;
-}
-
-button {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 4px;
-  background-color: #1890ff;
-  color: white;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #40a9ff;
 }
 </style> 
