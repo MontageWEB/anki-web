@@ -5,6 +5,7 @@
 ## 技术栈
 
 - 前端框架：Vue 3.0
+- 构建工具：Vite
 - UI 框架：Ant Design Mobile
 - 图标库：FontAwesome
 - 状态管理：Pinia
@@ -14,9 +15,27 @@
 
 ## 项目设置
 
+### 环境要求
+- Node.js >= 16.0.0
+- npm >= 7.0.0
+
 ### 安装依赖
 ```bash
+# 安装基础依赖
 npm install
+
+# 安装核心功能依赖
+npm install vue-router@4
+npm install pinia
+npm install ant-design-vue
+npm install @fortawesome/fontawesome-free
+npm install axios
+npm install lodash-es
+npm install localforage
+
+# 安装开发依赖
+npm install eslint --save-dev
+npm install prettier --save-dev
 ```
 
 ### 开发环境运行
@@ -27,6 +46,7 @@ npm run dev
 ### 生产环境构建
 ```bash
 npm run build
+npm run preview  # 预览构建结果
 ```
 
 ## 项目结构
@@ -60,4 +80,4 @@ anki-web/
 2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
 3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 提交 Pull Request 
+5. 提交 Pull Request

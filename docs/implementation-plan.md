@@ -9,13 +9,14 @@
 
 ### 2. 项目初始化
 ```bash
-# 使用 Vue CLI 创建项目
-npm create vue@latest anki-web
-# 仅选择必要的功能：
-# - Vue Router
-# - Pinia
-# - ESLint
-# - Prettier
+# 使用 Vite 创建项目
+npm create vite@latest . -- --template vue
+
+# 安装必要的功能：
+npm install vue-router@4
+npm install pinia
+npm install eslint --save-dev
+npm install prettier --save-dev
 ```
 
 ### 3. 核心依赖安装
