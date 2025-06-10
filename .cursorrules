@@ -263,4 +263,101 @@ utils/
 ├── validate.js     # 数据验证
 ├── format.js       # 数据格式化
 └── request.js      # 请求封装
-``` 
+```
+
+## 状态管理规范
+- 使用 Pinia 进行状态管理
+- 按功能模块拆分 store
+- store 文件命名使用 camelCase
+- 必须处理 loading 和错误状态
+- 统一使用 Toast 提示用户操作结果
+
+### Store 文件结构
+```javascript
+import { defineStore } from 'pinia'
+
+export const useExampleStore = defineStore('example', {
+  // 状态定义
+  state: () => ({
+    data: [],
+    loading: false,
+    initialized: false
+  }),
+
+  // 计算属性
+  getters: {
+    computedData: (state) => state.data
+  },
+
+  // 异步操作和状态修改
+  actions: {
+    // 初始化数据
+    async initializeData() {
+      if (this.initialized) return
+      
+      this.loading = true
+      try {
+        // 异步操作
+        this.initialized = true
+      } catch (error) {
+        Toast.fail('操作失败')
+      } finally {
+        this.loading = false
+      }
+    }
+  }
+})
+```
+
+### Store 使用规范
+- 在组件中使用 `setup()` 时导入 store
+- 使用 `computed` 处理响应式数据
+- 在 `onMounted` 中初始化数据
+- 处理异步操作的 loading 状态
+- 使用 try-catch 处理错误情况
+
+## 本地存储规范
+- 使用 localforage 进行本地存储
+- 统一在 utils/storage.js 中封装存储操作
+- 所有存储操作必须处理异常情况
+- 使用 Promise 封装异步操作
+- 遵循数据库 CRUD 操作规范
+
+### 存储服务示例
+```javascript
+import localforage from 'localforage'
+
+class StorageService {
+  constructor(storeName) {
+    localforage.config({
+      name: 'anki-web',
+      storeName
+    })
+  }
+
+  async getItem(key) {
+    try {
+      return await localforage.getItem(key)
+    } catch (error) {
+      console.error(`获取数据失败: ${key}`, error)
+      throw error
+    }
+  }
+
+  async setItem(key, value) {
+    try {
+      await localforage.setItem(key, value)
+    } catch (error) {
+      console.error(`保存数据失败: ${key}`, error)
+      throw error
+    }
+  }
+}
+```
+
+### 数据持久化规范
+- 重要数据必须及时持久化
+- 大量数据使用批量操作
+- 定期清理过期数据
+- 处理存储空间不足的情况
+- 提供数据导入导出功能 
