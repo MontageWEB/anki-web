@@ -3,34 +3,44 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
-    name: 'home',
-    component: () => import('../views/home/index.vue'),
+    redirect: '/today-review'
+  },
+  {
+    path: '/today-review',
+    name: 'today-review',
+    component: () => import('../views/today-review/index.vue'),
     meta: {
-      title: '首页'
+      title: '今日复习'
     }
   },
   {
-    path: '/review',
-    name: 'review',
-    component: () => import('../views/review/index.vue'),
-    meta: {
-      title: '复习'
-    }
+    path: '/card',
+    name: 'card',
+    children: [
+      {
+        path: 'list',
+        name: 'card-list',
+        component: () => import('../views/card/list.vue'),
+        meta: {
+          title: '卡片库'
+        }
+      },
+      {
+        path: 'add',
+        name: 'card-add',
+        component: () => import('../views/card/add.vue'),
+        meta: {
+          title: '新增卡片'
+        }
+      }
+    ]
   },
   {
-    path: '/manage',
-    name: 'manage',
-    component: () => import('../views/manage/index.vue'),
+    path: '/settings',
+    name: 'settings',
+    component: () => import('../views/settings/index.vue'),
     meta: {
-      title: '管理'
-    }
-  },
-  {
-    path: '/statistics',
-    name: 'statistics',
-    component: () => import('../views/statistics/index.vue'),
-    meta: {
-      title: '统计'
+      title: '设置'
     }
   },
   {
@@ -51,7 +61,7 @@ const router = createRouter({
 // 全局前置守卫
 router.beforeEach((to, from, next) => {
   // 设置页面标题
-  document.title = `${to.meta.title} - Anki复习助手`
+  document.title = to.meta.title ? `${to.meta.title} - Anki复习助手` : 'Anki复习助手'
   next()
 })
 
