@@ -59,7 +59,98 @@ src/
 - 遵循 BEM 命名规范
 - 优先使用 Flex 布局
 - 移动端适配使用 rem 单位
-- 颜色值统一使用变量管理
+- SCSS 模块系统使用规范：
+  - 变量文件使用下划线前缀（如 _variables.scss）
+  - 严格使用 @use 语法，禁止使用 @import
+  - 禁止在变量文件中使用 @forward 自引用
+  - 在组件中统一使用 @use '@/styles/_variables' as * 引入变量
+  - 禁止重复引入同一个变量文件
+  - 全局样式文件 index.scss 中只引入一次变量文件
+  - 组件样式必须添加 scoped 属性
+
+### 变量文件规范
+- 变量文件命名必须以下划线开头
+- 变量文件只负责定义变量，不包含具体样式
+- 可以使用 :export 导出变量给 JavaScript 使用
+- 禁止在变量文件中使用 @use 或 @import
+- 示例：
+  ```scss
+  // _variables.scss
+  $primary-color: #1890ff;
+  
+  :export {
+    primaryColor: $primary-color;
+  }
+  ```
+
+### 全局样式规范
+- 全局样式统一在 styles/index.scss 中管理
+- index.scss 只引入一次变量文件
+- 示例：
+  ```scss
+  // index.scss
+  @use '@/styles/_variables' as *;
+  
+  // 全局样式定义
+  ```
+
+### 组件样式规范
+- 组件样式必须使用 scoped 属性
+- 统一的变量引入方式
+- 示例：
+  ```scss
+  <style lang="scss" scoped>
+  @use '@/styles/_variables' as *;
+  
+  .component {
+    color: $primary-color;
+  }
+  </style>
+  ```
+
+### 设计变量规范
+- 颜色变量：
+  ```scss
+  $primary-color: #1890ff;    // 主色
+  $background-color: #f5f5f5; // 背景色
+  $text-primary: #333333;     // 文字主色
+  $text-secondary: #666666;   // 文字次要色
+  ```
+
+### 字体规范
+- 主标题：18px
+- 副标题：16px
+- 正文：14px
+- 辅助文字：12px
+
+### 间距规范
+- 页面边距：16px
+- 大间距：24px
+- 中间距：16px
+- 小间距：8px
+
+### 圆角规范
+- 卡片圆角：8px
+- 按钮圆角：4px
+
+### 动效规范
+- 页面切换：使用 Vue 的 transition 组件
+- 弹窗：使用 scale 和 opacity 过渡
+- 列表项：使用 fade 效果
+- 按钮：使用 transform scale 效果
+- Loading：使用 Vant 内置的 loading 组件
+
+### 响应式设计
+- 使用 rem 作为主要单位
+- 基准字号：37.5px（适配 375px 设计稿）
+- 使用 vw/vh 作为辅助单位
+- 图片使用 responsive 属性
+
+### 组件样式规范
+- 使用 scoped 属性隔离样式
+- 全局样式放在 styles 目录
+- 使用 CSS 变量实现主题定制
+- 避免使用 !important
 
 ## 性能优化规范
 - 组件懒加载
