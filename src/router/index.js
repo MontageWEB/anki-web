@@ -14,26 +14,20 @@ const routes = [
     }
   },
   {
-    path: '/card',
-    name: 'card',
-    children: [
-      {
-        path: 'list',
-        name: 'card-list',
-        component: () => import('../views/card/list.vue'),
-        meta: {
-          title: '卡片库'
-        }
-      },
-      {
-        path: 'add',
-        name: 'card-add',
-        component: () => import('../views/card/add.vue'),
-        meta: {
-          title: '新增卡片'
-        }
-      }
-    ]
+    path: '/card/add',
+    name: 'card-add',
+    component: () => import('../views/card/add.vue'),
+    meta: {
+      title: '新增卡片'
+    }
+  },
+  {
+    path: '/card/list',
+    name: 'card-list',
+    component: () => import('../views/card/list.vue'),
+    meta: {
+      title: '卡片库'
+    }
   },
   {
     path: '/settings',

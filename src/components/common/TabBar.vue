@@ -7,6 +7,12 @@
       今日复习
     </van-tabbar-item>
     <van-tabbar-item
+      to="/card/add"
+      icon="plus"
+    >
+      新增卡片
+    </van-tabbar-item>
+    <van-tabbar-item
       to="/card/list"
       icon="notes-o"
     >

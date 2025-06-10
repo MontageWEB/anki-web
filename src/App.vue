@@ -1,38 +1,5 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { Tabbar, TabbarItem } from 'vant'
-
-const router = useRouter()
-const route = useRoute()
-const active = ref(0)
-
-const tabs = [
-  {
-    name: '首页',
-    icon: 'home-o',
-    path: '/'
-  },
-  {
-    name: '复习',
-    icon: 'records',
-    path: '/review'
-  },
-  {
-    name: '管理',
-    icon: 'setting-o',
-    path: '/manage'
-  },
-  {
-    name: '统计',
-    icon: 'chart-trending-o',
-    path: '/statistics'
-  }
-]
-
-const onChange = (index) => {
-  router.push(tabs[index].path)
-}
+import TabBar from '@/components/common/TabBar.vue'
 </script>
 
 <template>
@@ -40,15 +7,7 @@ const onChange = (index) => {
     <main class="main">
       <router-view></router-view>
     </main>
-    <Tabbar v-model="active" @change="onChange">
-      <TabbarItem 
-        v-for="(tab, index) in tabs" 
-        :key="index"
-        :icon="tab.icon"
-      >
-        {{ tab.name }}
-      </TabbarItem>
-    </Tabbar>
+    <TabBar />
   </div>
 </template>
 
