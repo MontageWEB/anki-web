@@ -79,6 +79,21 @@ anki-web/
 - 遵循 ESLint 代码规范
 - 组件化开发
 
+### 工具函数开发规范
+- 使用 ES6 模块系统
+- 按功能模块组织代码
+- 完整的 JSDoc 文档
+- 统一的错误处理
+- 工具函数目录结构：
+  ```
+  src/utils/
+  ├── date.js       # 日期处理（格式化、计算等）
+  ├── storage.js    # 本地存储封装
+  ├── validate.js   # 数据验证函数
+  ├── format.js     # 数据格式化
+  └── request.js    # 网络请求封装
+  ```
+
 ### 样式开发规范
 - 使用 SCSS 预处理器（Dart Sass）
 - 使用新的 SCSS 模块系统：
