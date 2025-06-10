@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
-    redirect: '/today-review'
+    redirect: '/card/list'
   },
   {
     path: '/today-review',

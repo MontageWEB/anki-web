@@ -20,41 +20,45 @@
 
     <!-- 卡片列表 -->
     <div class="list-container">
-      <van-swipe-cell
-        v-for="item in filteredList"
-        :key="item.id"
-        class="list-item"
-      >
-        <!-- 卡片内容 -->
-        <div class="card-content" @click="showDetail(item)">
-          <div class="title">{{ item.title }}</div>
-          <div class="info">
-            <span class="time">创建时间：{{ formatDate(item.createTime) }}</span>
-            <span class="count">已复习：{{ item.reviewCount }}次</span>
-            <span class="next-time">下次复习：{{ formatDate(item.nextReviewTime) }}</span>
+      <van-empty v-if="!loading && filteredList.length === 0" description="暂无卡片" />
+      <van-loading v-else-if="loading" type="spinner" vertical>加载中...</van-loading>
+      <template v-else>
+        <van-swipe-cell
+          v-for="item in filteredList"
+          :key="item.id"
+          class="list-item"
+        >
+          <!-- 卡片内容 -->
+          <div class="card-content" @click="showDetail(item)">
+            <div class="title">{{ item.title }}</div>
+            <div class="info">
+              <span class="time">创建时间：{{ formatDate(item.createTime) }}</span>
+              <span class="count">已复习：{{ item.reviewCount }}次</span>
+              <span class="next-time">下次复习：{{ formatDate(item.nextReviewTime) }}</span>
+            </div>
           </div>
-        </div>
 
-        <!-- 左滑操作 -->
-        <template #right>
-          <div class="swipe-actions">
-            <van-button
-              square
-              text="编辑"
-              type="primary"
-              class="edit-btn"
-              @click="showEdit(item)"
-            />
-            <van-button
-              square
-              text="删除"
-              type="danger"
-              class="delete-btn"
-              @click="handleDelete(item.id)"
-            />
-          </div>
-        </template>
-      </van-swipe-cell>
+          <!-- 左滑操作 -->
+          <template #right>
+            <div class="swipe-actions">
+              <van-button
+                square
+                text="编辑"
+                type="primary"
+                class="edit-btn"
+                @click="showEdit(item)"
+              />
+              <van-button
+                square
+                text="删除"
+                type="danger"
+                class="delete-btn"
+                @click="handleDelete(item.id)"
+              />
+            </div>
+          </template>
+        </van-swipe-cell>
+      </template>
     </div>
 
     <!-- 详情弹窗 -->
@@ -123,17 +127,18 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed } from 'vue'
+import { defineComponent, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Dialog, Toast } from 'vant'
 import { formatDate } from '@/utils/date'
+import { useCardStore } from '@/store/card'
 
 export default defineComponent({
   name: 'CardList',
   setup() {
     const router = useRouter()
+    const cardStore = useCardStore()
     const searchText = ref('')
-    const cardList = ref([]) // 实际使用时从 store 或 API 获取
 
     // 弹窗控制
     const showDetailPopup = ref(false)
@@ -145,11 +150,16 @@ export default defineComponent({
       answer: ''
     })
 
+    // 初始化数据
+    onMounted(async () => {
+      await cardStore.initializeCards()
+    })
+
     // 根据搜索文本过滤列表
     const filteredList = computed(() => {
-      if (!searchText.value) return cardList.value
+      if (!searchText.value) return cardStore.allCards
       const keyword = searchText.value.toLowerCase()
-      return cardList.value.filter(item => 
+      return cardStore.allCards.filter(item => 
         item.title.toLowerCase().includes(keyword) ||
         item.answer.toLowerCase().includes(keyword)
       )
@@ -157,7 +167,10 @@ export default defineComponent({
 
     // 新增卡片
     const handleAdd = () => {
-      router.push('/card/add')
+      router.push({
+        path: '/card/add',
+        query: { from: 'list' }
+      })
     }
 
     // 清空搜索
@@ -178,7 +191,7 @@ export default defineComponent({
     }
 
     // 保存编辑
-    const handleSave = () => {
+    const handleSave = async () => {
       if (!editForm.value.title.trim()) {
         Toast('请输入知识点')
         return
@@ -188,9 +201,15 @@ export default defineComponent({
         return
       }
 
-      // 实际保存逻辑
-      console.log('保存卡片:', editForm.value)
-      showEditPopup.value = false
+      try {
+        await cardStore.updateCard(editForm.value.id, {
+          title: editForm.value.title.trim(),
+          answer: editForm.value.answer.trim()
+        })
+        showEditPopup.value = false
+      } catch (error) {
+        console.error('保存失败:', error)
+      }
     }
 
     // 删除卡片
@@ -198,9 +217,18 @@ export default defineComponent({
       Dialog.confirm({
         title: '确认删除',
         message: '确定要删除这张卡片吗？',
-      }).then(() => {
-        // 实际删除逻辑
-        console.log('删除卡片:', id)
+        beforeClose: async (action) => {
+          if (action === 'confirm') {
+            try {
+              await cardStore.deleteCard(id)
+              return true
+            } catch (error) {
+              console.error('删除失败:', error)
+              return false
+            }
+          }
+          return true
+        }
       })
     }
 
@@ -211,13 +239,14 @@ export default defineComponent({
       showEditPopup,
       currentCard,
       editForm,
-      formatDate,
+      loading: computed(() => cardStore.loading),
       handleAdd,
       handleClear,
       showDetail,
       showEdit,
       handleSave,
-      handleDelete
+      handleDelete,
+      formatDate
     }
   }
 })
@@ -227,136 +256,127 @@ export default defineComponent({
 @use '@/styles/_variables' as *;
 
 .card-list {
-  min-height: 100vh;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   background-color: $background-color;
+}
 
-  .search-bar {
-    position: sticky;
-    top: 0;
-    z-index: 1;
+.search-bar {
+  padding: 8px 16px;
+  background-color: #fff;
+}
+
+.list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.list-item {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.card-content {
+  padding: 16px;
+  background-color: #fff;
+
+  .title {
+    font-size: 16px;
+    font-weight: 500;
+    color: $text-primary;
+    margin-bottom: 8px;
   }
 
-  .list-container {
-    padding: $spacing-medium;
+  .info {
+    font-size: 12px;
+    color: $text-secondary;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
 
-    .list-item {
-      margin-bottom: $spacing-small;
-      border-radius: $radius-large;
-      overflow: hidden;
+.swipe-actions {
+  height: 100%;
+  display: flex;
 
-      .card-content {
-        padding: $spacing-medium;
-        background-color: #fff;
-
-        .title {
-          font-size: $font-size-medium;
-          color: $text-primary;
-          line-height: 1.4;
-          margin-bottom: $spacing-small;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .info {
-          font-size: $font-size-small;
-          color: $text-secondary;
-          display: flex;
-          flex-wrap: wrap;
-          gap: $spacing-small;
-        }
-      }
-
-      .swipe-actions {
-        height: 100%;
-        display: flex;
-
-        .van-button {
-          height: 100%;
-          width: 64px;
-        }
-
-        .edit-btn {
-          background-color: $primary-color;
-        }
-      }
-    }
+  .van-button {
+    height: 100%;
+    width: 60px;
   }
 }
 
 .detail-popup,
 .edit-popup {
   max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
 
-  .popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: $spacing-medium;
-    border-bottom: 1px solid #eee;
+.popup-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
 
-    .title {
-      font-size: $font-size-medium;
-      font-weight: 500;
-      color: $text-primary;
-    }
+  .title {
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
 
-    .van-icon {
-      font-size: 20px;
-      color: $text-secondary;
+.popup-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+
+  .section {
+    margin-bottom: 16px;
+
+    &:last-child {
+      margin-bottom: 0;
     }
   }
 
-  .popup-content {
-    padding: $spacing-medium;
-    overflow-y: auto;
+  .section-title {
+    font-size: 14px;
+    color: $text-secondary;
+    margin-bottom: 8px;
+  }
 
-    .section {
-      margin-bottom: $spacing-large;
+  .section-content {
+    font-size: 16px;
+    color: $text-primary;
+    line-height: 1.6;
+  }
+}
 
-      &:last-child {
-        margin-bottom: 0;
-      }
+.form {
+  .form-item {
+    margin-bottom: 16px;
 
-      .section-title {
-        font-size: $font-size-normal;
-        color: $text-secondary;
-        margin-bottom: $spacing-small;
-      }
-
-      .section-content {
-        font-size: $font-size-medium;
-        color: $text-primary;
-        line-height: 1.6;
-      }
-    }
-
-    .form {
-      .form-item {
-        margin-bottom: $spacing-large;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-
-        .label {
-          font-size: $font-size-normal;
-          color: $text-secondary;
-          margin-bottom: $spacing-small;
-        }
-
-        .van-field {
-          padding: 0;
-          background-color: transparent;
-        }
-      }
+    &:last-child {
+      margin-bottom: 0;
     }
   }
 
-  .popup-footer {
-    padding: $spacing-medium;
-    border-top: 1px solid #eee;
+  .label {
+    font-size: 14px;
+    color: $text-secondary;
+    margin-bottom: 8px;
   }
+}
+
+.popup-footer {
+  padding: 16px;
+  border-top: 1px solid #eee;
 }
 </style> 

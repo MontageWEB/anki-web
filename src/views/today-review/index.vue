@@ -21,7 +21,10 @@ export default defineComponent({
     const router = useRouter()
 
     const handleAdd = () => {
-      router.push('/card/add')
+      router.push({
+        path: '/card/add',
+        query: { from: 'list' }
+      })
     }
 
     return {
