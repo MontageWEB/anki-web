@@ -11,21 +11,21 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^6.5.1",
-    "axios": "^1.6.7",
-    "localforage": "^1.10.0",
-    "lodash-es": "^4.17.21",
-    "pinia": "^2.1.7",
-    "vant": "^4.9.19",
-    "vue": "^3.4.19",
-    "vue-router": "^4.3.0"
+    "@fortawesome/fontawesome-free": "6.5.1",
+    "axios": "1.6.7",
+    "localforage": "1.10.0",
+    "lodash-es": "4.17.21",
+    "pinia": "2.1.7",
+    "vant": "4.9.19",
+    "vue": "3.4.19",
+    "vue-router": "4.3.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.4",
-    "eslint": "^8.57.0",
-    "eslint-plugin-vue": "^9.22.0",
-    "prettier": "^3.2.5",
-    "sass": "^1.89.2",
-    "vite": "^5.1.4"
+    "@vitejs/plugin-vue": "5.0.4",
+    "eslint": "8.57.0",
+    "eslint-plugin-vue": "9.22.0",
+    "prettier": "3.2.5",
+    "sass": "1.89.2",
+    "vite": "5.1.4"
   }
 }
