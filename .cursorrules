@@ -39,6 +39,36 @@
 - test: 增加测试
 - chore: 构建过程或辅助工具的变动
 
+### 提交步骤
+1. 提交前检查
+   ```bash
+   git status  # 检查仓库状态，确认所有需要提交的文件
+   git diff    # 检查具体更改内容
+   ```
+
+2. 添加文件
+   - 添加所有更改：`git add .`
+   - 添加指定文件：`git add <file1> <file2>`
+   - 添加指定目录：`git add <directory>`
+
+3. 提交代码
+   ```bash
+   git commit -m "<类型>: <描述>"  # 使用规范的提交信息
+   ```
+
+4. 推送代码
+   ```bash
+   git push origin <branch-name>  # 推送到指定分支
+   ```
+
+### 最佳实践
+- 每次提交前先运行 `git status` 检查状态
+- 大型重构或完整功能开发使用 `git add .`
+- 小型修改或部分提交使用 `git add <file>`
+- 确保 .gitignore 正确配置
+- 提交信息要清晰描述本次更改的内容
+- 一次提交只包含一个完整的功能或修复
+
 ## 项目结构规范
 ```
 src/
