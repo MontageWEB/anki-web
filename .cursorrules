@@ -1,0 +1,94 @@
+# Anki复习助手项目规范
+
+## 开发环境规范
+- 使用 Node.js 版本 >= 16.0.0
+- 包管理器统一使用 npm
+- 编辑器推荐使用 VSCode
+- 必须安装 ESLint 和 Prettier 插件
+
+## JavaScript 编码规范
+- 使用原生 JavaScript，严禁使用 TypeScript
+- 使用 ES6+ 语法特性
+- 优先使用 const 和 let，禁止使用 var
+- 使用箭头函数表示回调
+- 使用解构赋值提取对象属性
+- 使用模板字符串替代字符串拼接
+
+## Vue 开发规范
+- 使用 Vue 3 组合式 API (Composition API)
+- 组件名使用 PascalCase 命名
+- props 必须指定类型和默认值
+- 事件名使用 kebab-case 命名
+- 组件目录结构遵循就近原则
+
+## 文件命名规范
+- 组件文件：PascalCase.vue（如 UserCard.vue）
+- 路由页面：kebab-case.vue（如 user-profile.vue）
+- 工具函数：camelCase.js（如 formatDate.js）
+- 样式文件：kebab-case.scss（如 main-style.scss）
+
+## Git 提交规范
+提交信息格式：<类型>: <描述>
+
+类型包括：
+- feat: 新功能
+- fix: 修复bug
+- docs: 文档更新
+- style: 代码格式（不影响代码运行的变动）
+- refactor: 重构（既不是新增功能，也不是修改bug的代码变动）
+- test: 增加测试
+- chore: 构建过程或辅助工具的变动
+
+## 项目结构规范
+```
+src/
+├── assets/          # 静态资源
+├── components/      # 通用组件
+│   ├── common/     # 基础组件
+│   └── business/   # 业务组件
+├── views/          # 页面组件
+├── router/         # 路由配置
+├── store/          # 状态管理
+├── utils/          # 工具函数
+├── api/            # API 接口
+└── styles/         # 全局样式
+```
+
+## 样式开发规范
+- 使用 SCSS 预处理器
+- 遵循 BEM 命名规范
+- 优先使用 Flex 布局
+- 移动端适配使用 rem 单位
+- 颜色值统一使用变量管理
+
+## 性能优化规范
+- 组件懒加载
+- 图片资源压缩
+- 合理使用缓存
+- 避免重复请求
+- 代码分割
+
+## 安全规范
+- 所有用户输入必须验证
+- API 请求必须处理错误情况
+- 敏感信息不允许硬编码
+- 使用 HTTPS 协议
+- 实现 XSS 防护
+
+## 测试规范
+- 编写单元测试
+- 组件需要测试 props 和事件
+- 工具函数需要测试边界情况
+- 保持测试覆盖率 > 80%
+
+## 文档规范
+- 组件必须包含使用说明
+- API 接口必须有文档
+- 复杂逻辑需要添加注释
+- 及时更新文档
+
+## 发布规范
+- 遵循语义化版本
+- 每次发布都要有更新日志
+- 发布前必须通过所有测试
+- 打包后进行手动测试验证 
