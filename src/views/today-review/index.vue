@@ -36,9 +36,11 @@
                     <van-icon name="clock-o" />
                     <span>复习次数：{{ card.reviewCount }}</span>
                   </div>
-                  <div class="info-item">
-                    <van-icon name="calendar-o" />
-                    <span>下次复习：{{ formatDate(card.nextReviewTime) }}</span>
+                  <div class="info-item" @click.stop>
+                    <NextReviewTime 
+                      :card="card" 
+                      @update="handleReviewTimeUpdate" 
+                    />
                   </div>
                 </div>
                 <div class="card-actions">
@@ -81,9 +83,11 @@
                     <van-icon name="clock-o" />
                     <span>复习次数：{{ card.reviewCount }}</span>
                   </div>
-                  <div class="info-item">
-                    <van-icon name="calendar-o" />
-                    <span>下次复习：{{ formatDate(card.nextReviewTime) }}</span>
+                  <div class="info-item" @click.stop>
+                    <NextReviewTime 
+                      :card="card" 
+                      @update="handleReviewTimeUpdate" 
+                    />
                   </div>
                 </div>
                 <div class="card-actions">
@@ -134,18 +138,37 @@
         <van-icon name="smile-o" size="64" color="#8696a7" />
       </template>
     </van-empty>
+
+    <!-- 日期选择器弹窗 -->
+    <van-calendar
+      v-model:show="showCalendar"
+      :min-date="minDate"
+      @confirm="handleDateConfirm"
+      color="#34c759"
+      title="选择下次复习时间"
+      round
+      show-confirm
+      confirm-text="确定"
+      confirm-disabled-text="确定"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { showSuccessToast } from 'vant'
+import { showSuccessToast, showToast, Swipe, SwipeItem } from 'vant'
 import storage from '@/utils/storage'
+import NextReviewTime from '@/components/common/NextReviewTime.vue'
 
 const router = useRouter()
 const todayCards = ref([])
 const currentIndex = ref(0)
+
+// 日期选择器相关
+const showCalendar = ref(false)
+const minDate = ref(new Date())
+const currentEditingCard = ref(null)
 
 // 格式化日期
 const formatDate = (dateString) => {
@@ -223,6 +246,66 @@ const handleAdd = () => {
     path: '/card/add',
     query: { from: 'today-review' }
   })
+}
+
+// 处理点击日期
+const handleSelectDate = (card) => {
+  currentEditingCard.value = card
+  showCalendar.value = true
+}
+
+// 处理日期确认
+const handleDateConfirm = async (date) => {
+  if (!currentEditingCard.value) return
+  
+  try {
+    // 更新下次复习时间，保持其他参数不变
+    await storage.updateCard(currentEditingCard.value.id, {
+      ...currentEditingCard.value,
+      nextReviewTime: date.toISOString()
+    })
+    
+    // 关闭日历选择器
+    showCalendar.value = false
+    
+    // 刷新卡片数据
+    await fetchTodayCards()
+    
+    // 如果当前卡片被移出今日复习列表（因为选择了未来日期）
+    if (todayCards.value.length === 0) {
+      showSuccessToast('已更新复习时间，今日无需复习')
+    } else {
+      // 如果当前卡片是最后一张，且被移出列表，将索引调整到最后一张
+      if (currentIndex.value >= todayCards.value.length) {
+        currentIndex.value = todayCards.value.length - 1
+      }
+      showSuccessToast('下次复习时间已更新')
+    }
+    
+    // 重置当前编辑的卡片
+    currentEditingCard.value = null
+  } catch (error) {
+    console.error('更新复习时间失败:', error)
+    showToast({
+      type: 'fail',
+      message: '更新失败'
+    })
+  }
+}
+
+// 处理复习时间更新
+const handleReviewTimeUpdate = async () => {
+  // 重新获取今日待复习卡片
+  await fetchTodayCards()
+  
+  // 如果当前没有卡片了，重置索引
+  if (todayCards.value.length === 0) {
+    currentIndex.value = 0
+  }
+  // 如果当前索引超出范围，调整到最后一张卡片
+  else if (currentIndex.value >= todayCards.value.length) {
+    currentIndex.value = todayCards.value.length - 1
+  }
 }
 
 onMounted(() => {
@@ -342,9 +425,22 @@ onMounted(() => {
     font-size: 14px;
     margin-bottom: $spacing-small;
     
+    &:last-child {
+      cursor: pointer;  // 添加手型光标
+      
+      &:hover {
+        color: #34c759;  // 悬停时变色
+        
+        .van-icon {
+          color: #34c759;
+        }
+      }
+    }
+    
     .van-icon {
       margin-right: $spacing-small;
       font-size: 16px;
+      transition: color 0.3s;  // 添加颜色过渡效果
     }
   }
 }
@@ -426,6 +522,20 @@ onMounted(() => {
     color: #8696a7;
     font-size: 16px;
     margin-top: $spacing-medium;
+  }
+}
+
+.meta-info {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #666;
+  
+  > div {
+    margin-bottom: 8px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 }
 </style> 

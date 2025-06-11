@@ -34,7 +34,7 @@
             <div class="info">
               <span class="time">创建时间：{{ formatDate(item.createTime) }}</span>
               <span class="count">已复习：{{ item.reviewCount }}次</span>
-              <span class="next-time">下次复习：{{ formatDate(item.nextReviewTime) }}</span>
+              <NextReviewTime :card="item" @update="handleReviewTimeUpdate" />
             </div>
           </div>
 
@@ -104,8 +104,11 @@
             <span class="value">{{ currentCard.reviewCount }}次</span>
           </div>
           <div class="info-item">
-            <span class="label">下次复习</span>
-            <span class="value">{{ formatDate(currentCard.nextReviewTime) }}</span>
+            <NextReviewTime 
+              v-if="currentCard.id" 
+              :card="currentCard" 
+              @update="handleDetailReviewTimeUpdate" 
+            />
           </div>
         </div>
       </div>
@@ -169,12 +172,16 @@
 <script>
 import { defineComponent, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { showToast, showDialog } from 'vant'
+import { showToast, showDialog, Popup } from 'vant'
 import { formatDate } from '@/utils/date'
 import { useCardStore } from '@/store/card'
+import NextReviewTime from '@/components/common/NextReviewTime.vue'
 
 export default defineComponent({
   name: 'CardList',
+  components: {
+    NextReviewTime
+  },
   setup() {
     const router = useRouter()
     const cardStore = useCardStore()
@@ -301,6 +308,21 @@ export default defineComponent({
       })
     }
 
+    // 处理复习时间更新
+    const handleReviewTimeUpdate = async () => {
+      await cardStore.initializeCards()
+    }
+
+    // 处理详情页中的复习时间更新
+    const handleDetailReviewTimeUpdate = async () => {
+      await cardStore.initializeCards()
+      // 更新当前显示的卡片
+      const updatedCard = cardStore.allCards.find(card => card.id === currentCard.value.id)
+      if (updatedCard) {
+        currentCard.value = { ...updatedCard }
+      }
+    }
+
     return {
       searchText,
       filteredList,
@@ -316,7 +338,9 @@ export default defineComponent({
       handleEditBack,
       handleSave,
       handleDelete,
-      formatDate
+      formatDate,
+      handleReviewTimeUpdate,
+      handleDetailReviewTimeUpdate
     }
   }
 })
@@ -365,11 +389,12 @@ export default defineComponent({
   }
 
   .info {
-    font-size: 12px;
-    color: $color-text-secondary;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #666;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    gap: 4px;
   }
 }
 
@@ -437,27 +462,29 @@ export default defineComponent({
   }
 
   .card-info {
-    padding: 16px;
-    background-color: #f8f8f8;
-    border-radius: 8px;
-
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    
     .info-item {
-      display: flex;
-      justify-content: space-between;
       margin-bottom: 12px;
-
+      display: flex;
+      align-items: center;
+      
+      .label {
+        width: 80px;
+        color: #666;
+        font-size: 14px;
+      }
+      
+      .value {
+        flex: 1;
+        color: #333;
+        font-size: 14px;
+      }
+      
       &:last-child {
         margin-bottom: 0;
-      }
-
-      .label {
-        color: $color-text-secondary;
-        font-size: 14px;
-      }
-
-      .value {
-        color: $color-text-primary;
-        font-size: 14px;
       }
     }
   }
