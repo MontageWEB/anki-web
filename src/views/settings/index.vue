@@ -21,7 +21,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .settings {
   min-height: 100vh;
-  background-color: $background-color;
+  background-color: $color-background;
 
   .content {
     padding: 16px;

@@ -115,7 +115,7 @@ export default defineComponent({
 
 .card-add {
   min-height: 100vh;
-  background-color: $background-color;
+  background-color: $color-background;
 }
 
 .content {
@@ -136,7 +136,7 @@ export default defineComponent({
 
   .label {
     font-size: 14px;
-    color: $text-secondary;
+    color: $color-text-secondary;
     margin-bottom: 8px;
   }
 }
@@ -144,5 +144,9 @@ export default defineComponent({
 :deep(.van-field) {
   padding: 0;
   background-color: transparent;
+}
+
+.hint-text {
+  color: $color-text-secondary;
 }
 </style> 

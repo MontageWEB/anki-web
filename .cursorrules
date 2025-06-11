@@ -1,10 +1,23 @@
 # Anki复习助手项目规范
 
 ## 开发环境规范
+
+### 基本要求
 - 使用 Node.js 版本 >= 16.0.0
 - 包管理器统一使用 npm
 - 编辑器推荐使用 VSCode
 - 必须安装 ESLint 和 Prettier 插件
+
+### 依赖管理
+✅ 推荐做法：
+- 所有依赖版本必须固定，禁止使用 ^ 或 ~
+- 定期更新依赖版本，但要经过完整测试
+- 使用 `npm audit` 检查依赖安全性
+
+❌ 避免做法：
+- 使用 latest 标签
+- 随意升级依赖版本
+- 使用未经验证的第三方包
 
 ## JavaScript 编码规范
 - 使用原生 JavaScript，严禁使用 TypeScript
@@ -15,11 +28,21 @@
 - 使用模板字符串替代字符串拼接
 
 ## Vue 开发规范
+
+### 组件开发
+✅ 推荐做法：
 - 使用 Vue 3 组合式 API (Composition API)
 - 组件名使用 PascalCase 命名
 - props 必须指定类型和默认值
 - 事件名使用 kebab-case 命名
-- 组件目录结构遵循就近原则
+
+❌ 避免做法：
+- 混用选项式 API 和组合式 API
+- 在 setup 中使用 this
+- props 类型不明确
+- 组件过于复杂（建议拆分）
+
+### 组件目录结构遵循就近原则
 
 ## 文件命名规范
 - 组件文件：PascalCase.vue（如 UserCard.vue）
@@ -85,7 +108,38 @@ src/
 ```
 
 ## 样式开发规范
-- 使用 SCSS 预处理器
+
+### SCSS 模块系统使用规范
+✅ 必须遵循：
+1. 使用新的 SCSS 模块系统：
+   ```scss
+   // ✅ 正确示例
+   @use '@/styles/_variables' as *;
+   
+   // ❌ 禁止使用
+   @import '@/styles/_variables';
+   ```
+
+2. 变量文件命名和组织：
+   - 使用下划线前缀（如 `_variables.scss`）
+   - 禁止在变量文件中使用 @forward 自引用
+   - 所有全局变量必须在 _variables.scss 中定义
+
+3. 组件中的样式：
+   ```vue
+   <style lang="scss" scoped>
+   // ✅ 正确示例
+   @use '@/styles/_variables' as *;
+   
+   .component {
+     color: $color-text-primary;
+     padding: $spacing-medium;
+   }
+   </style>
+   ```
+
+### 基本规范
+- 使用 SCSS 预处理器（Dart Sass 1.69.7）
 - 遵循 BEM 命名规范
 - 优先使用 Flex 布局
 - 移动端适配使用 rem 单位
@@ -208,10 +262,55 @@ src/
 - 工具函数：_mixins.scss, _functions.scss
 
 ### 变量命名规范
-- 颜色：$color-[用途]-[状态]
-- 尺寸：$size-[组件]-[类型]
-- 间距：$spacing-[大小]
-- 字体：$font-[属性]-[大小]
+✅ 正确示例：
+```scss
+$color-primary: #1890ff;
+$color-text-primary: #333333;
+$font-size-large: 18px;
+$spacing-medium: 16px;
+```
+
+❌ 错误示例：
+```scss
+$primary: #1890ff;      // 缺少类型前缀
+$text: #333333;         // 命名不明确
+$large: 18px;           // 含义不清晰
+$space: 16px;           // 过于简单
+```
+
+### 变量使用最佳实践
+1. 文件组织
+   ✅ 推荐做法：
+   ```scss
+   // _variables.scss
+   $color-primary: #1890ff;
+   
+   // 组件中
+   @import '@/styles/_variables.scss';
+   ```
+   
+   ❌ 避免做法：
+   ```scss
+   // 组件中直接定义变量
+   $color-primary: #1890ff;
+   ```
+
+2. 变量引用
+   ✅ 推荐做法：
+   ```scss
+   .button {
+     color: $color-text-primary;
+     font-size: $font-size-normal;
+   }
+   ```
+   
+   ❌ 避免做法：
+   ```scss
+   .button {
+     color: #333333;  // 硬编码颜色值
+     font-size: 14px; // 硬编码尺寸
+   }
+   ```
 
 ### 响应式设计规范
 - 使用 rem 作为主要单位
@@ -400,3 +499,35 @@ class StorageService {
 - 定期清理过期数据
 - 处理存储空间不足的情况
 - 提供数据导入导出功能 
+
+#### 常见问题及解决方案
+
+1. 变量未定义错误
+   ```
+   Undefined variable: "$text-primary"
+   ```
+   解决步骤：
+   1. 检查变量名是否符合规范（是否缺少前缀）
+   2. 确认是否已导入变量文件
+   3. 使用 grep 搜索确保变量名全局统一
+   4. 检查 _variables.scss 文件中是否定义了该变量
+
+2. 样式不生效
+   问题表现：
+   - 样式写了但不生效
+   - 样式优先级不符合预期
+   
+   解决步骤：
+   1. 检查是否添加了 scoped 属性
+   2. 检查选择器优先级
+   3. 使用 Vue DevTools 查看元素样式
+   4. 考虑使用 :deep() 选择器
+
+3. 样式污染
+   问题表现：
+   - 组件样式影响到其他组件
+   
+   解决步骤：
+   1. 添加 scoped 属性
+   2. 使用 BEM 命名规范
+   3. 避免使用全局选择器 

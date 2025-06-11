@@ -3,12 +3,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
-    redirect: '/card/list'
+    redirect: '/today-review'
   },
   {
     path: '/today-review',
     name: 'today-review',
-    component: () => import('../views/today-review/index.vue'),
+    component: () => import('@/views/today-review/index.vue'),
     meta: {
       title: '今日复习'
     }
@@ -16,7 +16,7 @@ const routes = [
   {
     path: '/card/add',
     name: 'card-add',
-    component: () => import('../views/card/add.vue'),
+    component: () => import('@/views/card/add.vue'),
     meta: {
       title: '新增卡片'
     }
@@ -24,7 +24,7 @@ const routes = [
   {
     path: '/card/list',
     name: 'card-list',
-    component: () => import('../views/card/list.vue'),
+    component: () => import('@/views/card/list.vue'),
     meta: {
       title: '卡片库'
     }
@@ -32,7 +32,7 @@ const routes = [
   {
     path: '/settings',
     name: 'settings',
-    component: () => import('../views/settings/index.vue'),
+    component: () => import('@/views/settings/index.vue'),
     meta: {
       title: '设置'
     }
@@ -40,7 +40,7 @@ const routes = [
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
-    component: () => import('../views/error/404.vue'),
+    component: () => import('@/views/error/404.vue'),
     meta: {
       title: '页面未找到'
     }

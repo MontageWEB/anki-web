@@ -15,7 +15,9 @@ import {
   Dialog,
   Toast,
   Empty,
-  Loading
+  Loading,
+  Swipe,
+  SwipeItem
 } from 'vant'
 import 'vant/lib/index.css'
 import './styles/index.scss'
@@ -40,5 +42,7 @@ app.use(Dialog)
 app.use(Toast)
 app.use(Empty)
 app.use(Loading)
+app.use(Swipe)
+app.use(SwipeItem)
 
 app.mount('#app')

@@ -329,7 +329,7 @@ export default defineComponent({
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: $background-color;
+  background-color: $color-background;
 }
 
 .search-bar {
@@ -360,13 +360,13 @@ export default defineComponent({
   .title {
     font-size: 16px;
     font-weight: 500;
-    color: $text-primary;
+    color: $color-text-primary;
     margin-bottom: 8px;
   }
 
   .info {
     font-size: 12px;
-    color: $text-secondary;
+    color: $color-text-secondary;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -425,7 +425,7 @@ export default defineComponent({
 
     .section-title {
       font-size: 14px;
-      color: $text-secondary;
+      color: $color-text-secondary;
       margin-bottom: 8px;
     }
 
@@ -451,12 +451,12 @@ export default defineComponent({
       }
 
       .label {
-        color: $text-secondary;
+        color: $color-text-secondary;
         font-size: 14px;
       }
 
       .value {
-        color: $text-primary;
+        color: $color-text-primary;
         font-size: 14px;
       }
     }
@@ -474,8 +474,24 @@ export default defineComponent({
 
   .label {
     font-size: 14px;
-    color: $text-secondary;
+    color: $color-text-secondary;
     margin-bottom: 8px;
   }
+}
+
+.empty-text {
+  color: $color-text-secondary;
+}
+
+.load-more {
+  color: $color-text-secondary;
+}
+
+.card-title {
+  color: $color-text-primary;
+}
+
+.card-meta {
+  color: $color-text-secondary;
 }
 </style> 
