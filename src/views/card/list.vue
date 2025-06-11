@@ -69,17 +69,44 @@
       class="detail-popup"
     >
       <div class="popup-header">
-        <span class="title">卡片详情</span>
-        <van-icon name="cross" @click="showDetailPopup = false" />
+        <div class="left">
+          <van-icon name="arrow-left" @click="showDetailPopup = false" />
+          <span class="title">卡片详情</span>
+        </div>
+        <van-button
+          plain
+          type="primary"
+          size="small"
+          @click="showEdit(currentCard)"
+        >
+          编辑
+        </van-button>
       </div>
       <div class="popup-content">
+        <!-- 知识点 -->
         <div class="section">
           <div class="section-title">知识点</div>
           <div class="section-content">{{ currentCard.title }}</div>
         </div>
+        <!-- 答案 -->
         <div class="section">
           <div class="section-title">答案</div>
           <div class="section-content">{{ currentCard.answer }}</div>
+        </div>
+        <!-- 卡片信息 -->
+        <div class="card-info">
+          <div class="info-item">
+            <span class="label">创建时间</span>
+            <span class="value">{{ formatDate(currentCard.createTime) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">已复习次数</span>
+            <span class="value">{{ currentCard.reviewCount }}次</span>
+          </div>
+          <div class="info-item">
+            <span class="label">下次复习</span>
+            <span class="value">{{ formatDate(currentCard.nextReviewTime) }}</span>
+          </div>
         </div>
       </div>
     </van-popup>
@@ -92,8 +119,18 @@
       class="edit-popup"
     >
       <div class="popup-header">
-        <span class="title">编辑卡片</span>
-        <van-icon name="cross" @click="showEditPopup = false" />
+        <div class="left">
+          <van-icon name="arrow-left" @click="handleEditBack" />
+          <span class="title">编辑卡片</span>
+        </div>
+        <van-button
+          plain
+          type="primary"
+          size="small"
+          @click="handleSave"
+        >
+          保存
+        </van-button>
       </div>
       <div class="popup-content">
         <div class="form">
@@ -103,8 +140,11 @@
               v-model="editForm.title"
               type="textarea"
               placeholder="请输入知识点"
+              :rules="[{ required: true, message: '请输入知识点' }]"
               rows="3"
               autosize
+              maxlength="100"
+              show-word-limit
             />
           </div>
           <div class="form-item">
@@ -113,13 +153,13 @@
               v-model="editForm.answer"
               type="textarea"
               placeholder="请输入答案"
+              :rules="[{ required: true, message: '请输入答案' }]"
               rows="6"
               autosize
+              maxlength="500"
+              show-word-limit
             />
           </div>
-        </div>
-        <div class="popup-footer">
-          <van-button block type="primary" @click="handleSave">保存</van-button>
         </div>
       </div>
     </van-popup>
@@ -129,7 +169,7 @@
 <script>
 import { defineComponent, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Dialog, Toast } from 'vant'
+import { showToast, showDialog } from 'vant'
 import { formatDate } from '@/utils/date'
 import { useCardStore } from '@/store/card'
 
@@ -188,25 +228,52 @@ export default defineComponent({
     const showEdit = (item) => {
       editForm.value = { ...item }
       showEditPopup.value = true
+      // 如果是从详情页进入编辑，关闭详情弹窗
+      if (showDetailPopup.value) {
+        showDetailPopup.value = false
+      }
+    }
+
+    // 编辑页返回
+    const handleEditBack = () => {
+      showEditPopup.value = false
+      // 如果是从详情页进入编辑，返回详情页
+      if (currentCard.value.id === editForm.value.id) {
+        showDetailPopup.value = true
+      }
     }
 
     // 保存编辑
     const handleSave = async () => {
+      // 表单验证
       if (!editForm.value.title.trim()) {
-        Toast('请输入知识点')
+        showToast('请输入知识点')
         return
       }
       if (!editForm.value.answer.trim()) {
-        Toast('请输入答案')
+        showToast('请输入答案')
         return
       }
 
       try {
-        await cardStore.updateCard(editForm.value.id, {
+        // 更新卡片
+        const updatedCard = await cardStore.updateCard(editForm.value.id, {
           title: editForm.value.title.trim(),
           answer: editForm.value.answer.trim()
         })
+
+        // 更新当前卡片数据
+        currentCard.value = updatedCard
+
+        // 关闭所有弹窗
         showEditPopup.value = false
+        showDetailPopup.value = false
+
+        // 显示成功提示
+        showToast({
+          type: 'success',
+          message: '保存成功'
+        })
       } catch (error) {
         console.error('保存失败:', error)
       }
@@ -214,21 +281,23 @@ export default defineComponent({
 
     // 删除卡片
     const handleDelete = (id) => {
-      Dialog.confirm({
+      showDialog({
         title: '确认删除',
         message: '确定要删除这张卡片吗？',
-        beforeClose: async (action) => {
-          if (action === 'confirm') {
-            try {
-              await cardStore.deleteCard(id)
-              return true
-            } catch (error) {
-              console.error('删除失败:', error)
-              return false
-            }
+        showCancelButton: true
+      }).then(async () => {
+        try {
+          await cardStore.deleteCard(id)
+          // 如果删除的是当前正在查看的卡片，关闭所有弹窗
+          if (currentCard.value.id === id) {
+            showDetailPopup.value = false
+            showEditPopup.value = false
           }
-          return true
+        } catch (error) {
+          console.error('删除失败:', error)
         }
+      }).catch(() => {
+        // 取消删除，不做任何操作
       })
     }
 
@@ -244,6 +313,7 @@ export default defineComponent({
       handleClear,
       showDetail,
       showEdit,
+      handleEditBack,
       handleSave,
       handleDelete,
       formatDate
@@ -315,17 +385,29 @@ export default defineComponent({
 
 .detail-popup,
 .edit-popup {
-  max-height: 80vh;
+  min-height: 60vh;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
 }
 
 .popup-header {
-  padding: 16px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  padding: 16px;
   border-bottom: 1px solid #eee;
+
+  .left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .van-icon {
+      font-size: 20px;
+      cursor: pointer;
+    }
+  }
 
   .title {
     font-size: 16px;
@@ -339,29 +421,51 @@ export default defineComponent({
   padding: 16px;
 
   .section {
-    margin-bottom: 16px;
+    margin-bottom: 24px;
 
-    &:last-child {
-      margin-bottom: 0;
+    .section-title {
+      font-size: 14px;
+      color: $text-secondary;
+      margin-bottom: 8px;
+    }
+
+    .section-content {
+      font-size: 16px;
+      line-height: 1.6;
+      white-space: pre-wrap;
     }
   }
 
-  .section-title {
-    font-size: 14px;
-    color: $text-secondary;
-    margin-bottom: 8px;
-  }
+  .card-info {
+    padding: 16px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
 
-  .section-content {
-    font-size: 16px;
-    color: $text-primary;
-    line-height: 1.6;
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .label {
+        color: $text-secondary;
+        font-size: 14px;
+      }
+
+      .value {
+        color: $text-primary;
+        font-size: 14px;
+      }
+    }
   }
 }
 
 .form {
   .form-item {
-    margin-bottom: 16px;
+    margin-bottom: 24px;
 
     &:last-child {
       margin-bottom: 0;
@@ -373,10 +477,5 @@ export default defineComponent({
     color: $text-secondary;
     margin-bottom: 8px;
   }
-}
-
-.popup-footer {
-  padding: 16px;
-  border-top: 1px solid #eee;
 }
 </style> 
