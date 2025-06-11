@@ -6,7 +6,7 @@
 
 - 前端框架：Vue 3.0
 - 构建工具：Vite
-- UI 框架：Vant (https://vant-ui.github.io/vant)
+- UI 框架：Vant 4 (https://vant-ui.github.io/vant)
 - 样式预处理器：SCSS (Dart Sass)
 - 状态管理：Pinia
 - 路由：Vue Router

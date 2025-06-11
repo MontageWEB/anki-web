@@ -25,7 +25,9 @@
     "eslint": "8.57.0",
     "eslint-plugin-vue": "9.22.0",
     "prettier": "3.2.5",
-    "sass": "1.89.2",
-    "vite": "5.1.4"
+    "sass": "^1.69.7",
+    "sass-loader": "^16.0.5",
+    "vite": "5.1.4",
+    "why-is-node-running": "^3.2.2"
   }
 }

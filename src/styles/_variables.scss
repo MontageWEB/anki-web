@@ -19,7 +19,6 @@ $spacing-small: 8px;    // 小间距
 $radius-large: 8px;   // 卡片圆角
 $radius-small: 4px;   // 按钮圆角
 
-// 导出所有变量，供其他文件使用
 :export {
   primaryColor: $primary-color;
   backgroundColor: $background-color;

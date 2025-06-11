@@ -13,7 +13,8 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        charset: false
+        includePaths: [path.resolve(__dirname, 'src/styles')],
+        quietDeps: true
       }
     }
   }
