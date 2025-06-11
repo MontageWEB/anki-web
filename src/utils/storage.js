@@ -46,13 +46,17 @@ class StorageService {
   async addCard(card) {
     try {
       const cards = await this.getAllCards()
+      const now = new Date()
+      const today = new Date(now)
+      today.setHours(23, 59, 59, 999)  // 设置为今天的 23:59:59.999
+      
       const newCard = {
         ...card,
         id: Date.now().toString(),
-        createTime: new Date().toISOString(),
-        updateTime: new Date().toISOString(),
+        createTime: now.toISOString(),
+        updateTime: now.toISOString(),
         reviewCount: 0,
-        nextReviewTime: new Date().toISOString()
+        nextReviewTime: today.toISOString()
       }
       cards.push(newCard)
       await this.saveCards(cards)

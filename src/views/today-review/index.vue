@@ -6,6 +6,7 @@
       fixed
       :border="false"
       :placeholder="true"
+      class="custom-nav"
     >
       <template #right>
         <van-icon name="plus" size="24" @click="handleAdd" />
@@ -24,72 +25,113 @@
             <!-- 卡片正面 -->
             <div class="card-face card-front" @click="handleFlip(card)">
               <div class="card-content">
-                <h3 class="card-title">知识点</h3>
-                <p class="card-text">{{ card.front }}</p>
+                <span class="card-label">知识点</span>
+                <div class="card-text-wrapper">
+                  <p class="card-text">{{ card.title }}</p>
+                </div>
               </div>
-              <div class="card-info">
-                <p>创建时间：{{ formatDate(card.createTime) }}</p>
-                <p>已复习：{{ card.reviewCount }}次</p>
-                <p>下次复习：{{ formatDate(card.nextReviewTime) }}</p>
-              </div>
-              <div class="card-actions">
-                <van-button 
-                  type="success" 
-                  size="small" 
-                  @click.stop="handleMastered(card)"
-                >
-                  掌握
-                </van-button>
-                <van-button 
-                  type="danger" 
-                  size="small" 
-                  @click.stop="handleForgotten(card)"
-                >
-                  忘记
-                </van-button>
+              <div class="card-footer">
+                <div class="card-info">
+                  <div class="info-item">
+                    <van-icon name="clock-o" />
+                    <span>复习次数：{{ card.reviewCount }}</span>
+                  </div>
+                  <div class="info-item">
+                    <van-icon name="calendar-o" />
+                    <span>下次复习：{{ formatDate(card.nextReviewTime) }}</span>
+                  </div>
+                </div>
+                <div class="card-actions">
+                  <van-button 
+                    type="success" 
+                    size="small"
+                    class="action-btn success-btn" 
+                    @click.stop="handleMastered(card)"
+                  >
+                    <template #icon>
+                      <van-icon name="checked" />
+                    </template>
+                    掌握
+                  </van-button>
+                  <van-button 
+                    type="danger" 
+                    size="small"
+                    class="action-btn danger-btn" 
+                    @click.stop="handleForgotten(card)"
+                  >
+                    <template #icon>
+                      <van-icon name="cross" />
+                    </template>
+                    忘记
+                  </van-button>
+                </div>
               </div>
             </div>
             <!-- 卡片反面 -->
             <div class="card-face card-back" @click="handleFlip(card)">
               <div class="card-content">
-                <h3 class="card-title">答案</h3>
-                <p class="card-text">{{ card.back }}</p>
+                <span class="card-label">答案</span>
+                <div class="card-text-wrapper">
+                  <p class="card-text">{{ card.answer }}</p>
+                </div>
               </div>
-              <div class="card-info">
-                <p>创建时间：{{ formatDate(card.createTime) }}</p>
-                <p>已复习：{{ card.reviewCount }}次</p>
-                <p>下次复习：{{ formatDate(card.nextReviewTime) }}</p>
-              </div>
-              <div class="card-actions">
-                <van-button 
-                  type="success" 
-                  size="small" 
-                  @click.stop="handleMastered(card)"
-                >
-                  掌握
-                </van-button>
-                <van-button 
-                  type="danger" 
-                  size="small" 
-                  @click.stop="handleForgotten(card)"
-                >
-                  忘记
-                </van-button>
+              <div class="card-footer">
+                <div class="card-info">
+                  <div class="info-item">
+                    <van-icon name="clock-o" />
+                    <span>复习次数：{{ card.reviewCount }}</span>
+                  </div>
+                  <div class="info-item">
+                    <van-icon name="calendar-o" />
+                    <span>下次复习：{{ formatDate(card.nextReviewTime) }}</span>
+                  </div>
+                </div>
+                <div class="card-actions">
+                  <van-button 
+                    type="success" 
+                    size="small"
+                    class="action-btn success-btn" 
+                    @click.stop="handleMastered(card)"
+                  >
+                    <template #icon>
+                      <van-icon name="checked" />
+                    </template>
+                    掌握
+                  </van-button>
+                  <van-button 
+                    type="danger" 
+                    size="small"
+                    class="action-btn danger-btn" 
+                    @click.stop="handleForgotten(card)"
+                  >
+                    <template #icon>
+                      <van-icon name="cross" />
+                    </template>
+                    忘记
+                  </van-button>
+                </div>
               </div>
             </div>
           </div>
         </van-swipe-item>
       </van-swipe>
+
+      <!-- 进度指示器 -->
+      <div class="progress-indicator">
+        <span class="current">{{ currentIndex + 1 }}</span>
+        <span class="separator">/</span>
+        <span class="total">{{ todayCards.length }}</span>
+      </div>
     </div>
 
     <!-- 无卡片提示 -->
     <van-empty
       v-else
-      class="empty-tip"
+      class="custom-empty"
       description="今天没有需要复习的卡片"
     >
       <template #image>
-        <van-icon name="smile-o" size="64" />
+        <van-icon name="smile-o" size="64" color="#8696a7" />
       </template>
     </van-empty>
   </div>
@@ -115,7 +157,7 @@ const formatDate = (dateString) => {
 const fetchTodayCards = async () => {
   const allCards = await storage.getAllCards()
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  today.setHours(23, 59, 59, 999)  // 设置为今天的 23:59:59.999
   
   todayCards.value = allCards
     .filter(card => new Date(card.nextReviewTime) <= today)
@@ -150,6 +192,10 @@ const handleFlip = (card) => {
 // 处理卡片切换
 const handleCardChange = (index) => {
   currentIndex.value = index
+  // 确保新卡片显示正面
+  if (todayCards.value[index]) {
+    todayCards.value[index].isFlipped = false
+  }
 }
 
 // 处理掌握按钮点击
@@ -173,7 +219,10 @@ const handleForgotten = async (card) => {
 
 // 跳转到新增卡片页面
 const handleAdd = () => {
-  router.push('/card/add')
+  router.push({
+    path: '/card/add',
+    query: { from: 'today-review' }
+  })
 }
 
 onMounted(() => {
@@ -182,17 +231,31 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@import '@/styles/_variables.scss';
+@use '@/styles/_variables' as *;
 
 .today-review {
-  background-color: $color-background;
   min-height: 100vh;
+  background-color: #f7f9fc;
   padding: $spacing-medium;
+  
+  .custom-nav {
+    background-color: transparent;
+    
+    :deep(.van-nav-bar__title) {
+      color: #2c3e50;
+      font-weight: 600;
+    }
+    
+    :deep(.van-icon) {
+      color: #2c3e50;
+    }
+  }
 }
 
 .card-container {
-  margin-top: $spacing-large;
-  height: calc(100vh - 200px);
+  margin-top: calc($spacing-large * 2);
+  height: calc(100vh - 180px);
+  position: relative;
   
   :deep(.van-swipe) {
     height: 100%;
@@ -208,7 +271,7 @@ onMounted(() => {
   position: relative;
   width: 100%;
   height: 100%;
-  transition: transform 0.6s;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   transform-style: preserve-3d;
   
   &.is-flipped {
@@ -221,74 +284,148 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
-  background-color: #fff;
-  border-radius: $border-radius-large;
-  padding: $spacing-medium;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 24px;
+  padding: $spacing-large;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-}
-
-.card-back {
-  transform: rotateY(180deg);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  
+  &.card-back {
+    transform: rotateY(180deg);
+  }
 }
 
 .card-content {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: $font-size-large;
-  color: $color-text-primary;
+  flex-direction: column;
+  
+  .card-label {
+    font-size: 14px;
+    color: #8696a7;
+    margin-bottom: $spacing-medium;
+    font-weight: 500;
+  }
+  
+  .card-text-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .card-text {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #2c3e50;
+    text-align: center;
+    margin: 0;
+    padding: 0 $spacing-medium;
+    white-space: pre-wrap;
+  }
 }
 
 .card-footer {
-  text-align: center;
-  color: $color-text-primary;
-}
-
-.card-hint {
-  color: $color-text-secondary;
-  font-size: $font-size-small;
-}
-
-.card-title {
-  font-size: $font-size-large;
-  margin-bottom: $spacing-medium;
-  color: $color-text-primary;
-}
-
-.card-text {
-  font-size: $font-size-normal;
-  line-height: 1.6;
-  color: $color-text-primary;
-  white-space: pre-wrap;
+  margin-top: auto;
+  padding-top: $spacing-large;
+  padding-bottom: 60px;
 }
 
 .card-info {
-  margin: $spacing-medium 0;
-  font-size: $font-size-small;
-  color: $color-text-secondary;
+  margin-bottom: $spacing-large;
   
-  p {
-    margin: $spacing-small 0;
+  .info-item {
+    display: flex;
+    align-items: center;
+    color: #8696a7;
+    font-size: 14px;
+    margin-bottom: $spacing-small;
+    
+    .van-icon {
+      margin-right: $spacing-small;
+      font-size: 16px;
+    }
   }
 }
 
 .card-actions {
   display: flex;
-  justify-content: space-around;
-  padding: $spacing-medium 0;
+  justify-content: space-between;
+  gap: $spacing-medium;
   
-  .van-button {
-    width: 120px;
+  .action-btn {
+    flex: 1;
+    height: 44px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 12px;
+    
+    :deep(.van-icon) {
+      font-size: 18px;
+      margin-right: 4px;
+    }
+    
+    &.success-btn {
+      background-color: #34c759;
+      border-color: #34c759;
+      
+      &:active {
+        background-color: darken(#34c759, 5%);
+        border-color: darken(#34c759, 5%);
+      }
+    }
+    
+    &.danger-btn {
+      background-color: #ff3b30;
+      border-color: #ff3b30;
+      
+      &:active {
+        background-color: darken(#ff3b30, 5%);
+        border-color: darken(#ff3b30, 5%);
+      }
+    }
   }
 }
 
-.empty-tip {
+.progress-indicator {
+  position: absolute;
+  bottom: $spacing-small;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(44, 62, 80, 0.8);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+  
+  .current {
+    color: #ffffff;
+  }
+  
+  .separator {
+    margin: 0 4px;
+    opacity: 0.7;
+  }
+  
+  .total {
+    opacity: 0.7;
+  }
+}
+
+.custom-empty {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  
+  :deep(.van-empty__description) {
+    color: #8696a7;
+    font-size: 16px;
+    margin-top: $spacing-medium;
+  }
 }
 </style> 

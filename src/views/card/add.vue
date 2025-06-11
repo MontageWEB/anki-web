@@ -56,8 +56,10 @@ export default defineComponent({
     const route = useRoute()
     const cardStore = useCardStore()
 
-    // 根据路由参数判断是否显示返回按钮
-    const showBackButton = computed(() => route.query.from === 'list')
+    // 根据路由参数判断来源
+    const isFromList = computed(() => route.query.from === 'list')
+    const isFromTodayReview = computed(() => route.query.from === 'today-review')
+    const showBackButton = computed(() => isFromList.value || isFromTodayReview.value)
 
     // 表单数据
     const formData = ref({
@@ -68,6 +70,14 @@ export default defineComponent({
     // 返回上一页
     const handleBack = () => {
       router.back()
+    }
+
+    // 清空表单
+    const resetForm = () => {
+      formData.value = {
+        title: '',
+        answer: ''
+      }
     }
 
     // 保存卡片
@@ -89,14 +99,28 @@ export default defineComponent({
           answer: formData.value.answer.trim()
         })
 
-        // 返回上一页或卡片库
-        if (showBackButton.value) {
+        // 显示成功提示
+        showToast({
+          type: 'success',
+          message: '添加成功'
+        })
+
+        // 根据来源执行不同的后续操作
+        if (isFromTodayReview.value) {
+          // 从今日复习页面进入：返回并刷新数据
+          await cardStore.fetchTodayCards() // 刷新今日复习数据
           router.back()
         } else {
-          router.replace('/card/list')
+          // 从卡片库或底部导航进入：清空表单并停留在当前页面
+          resetForm()
         }
+
       } catch (error) {
         console.error('保存失败:', error)
+        showToast({
+          type: 'fail',
+          message: '保存失败'
+        })
       }
     }
 

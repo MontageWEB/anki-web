@@ -53,6 +53,20 @@ export const useCardStore = defineStore('card', {
       }
     },
 
+    // 刷新今日复习数据
+    async fetchTodayCards() {
+      this.loading = true
+      try {
+        const cards = await storage.getAllCards()
+        this.cards = cards
+      } catch (error) {
+        showToast('刷新今日复习数据失败')
+        console.error('刷新今日复习数据失败:', error)
+      } finally {
+        this.loading = false
+      }
+    },
+
     // 添加卡片
     async addCard(card) {
       this.loading = true
