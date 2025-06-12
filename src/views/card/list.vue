@@ -14,6 +14,7 @@
         placeholder="搜索知识点或答案"
         shape="round"
         clearable
+        @search="handleSearch"
         @clear="handleClear"
       />
     </div>
@@ -198,19 +199,31 @@ export default defineComponent({
     })
 
     // 初始化数据
-    onMounted(async () => {
-      await cardStore.initializeCards()
-    })
-
-    // 根据搜索文本过滤列表
+    const loading = computed(() => cardStore.loading)
     const filteredList = computed(() => {
-      if (!searchText.value) return cardStore.allCards
+      if (!searchText.value) return cardStore.allCards || []
       const keyword = searchText.value.toLowerCase()
-      return cardStore.allCards.filter(item => 
+      return (cardStore.allCards || []).filter(item => 
         item.title.toLowerCase().includes(keyword) ||
         item.answer.toLowerCase().includes(keyword)
       )
     })
+
+    // 初始化加载
+    onMounted(async () => {
+      await cardStore.initializeCards()
+    })
+
+    // 搜索处理
+    const handleSearch = async () => {
+      await cardStore.setSearchText(searchText.value)
+    }
+
+    // 清除搜索
+    const handleClear = async () => {
+      searchText.value = ''
+      await cardStore.setSearchText('')
+    }
 
     // 新增卡片
     const handleAdd = () => {
@@ -218,11 +231,6 @@ export default defineComponent({
         path: '/card/add',
         query: { from: 'list' }
       })
-    }
-
-    // 清空搜索
-    const handleClear = () => {
-      searchText.value = ''
     }
 
     // 显示详情
@@ -324,15 +332,19 @@ export default defineComponent({
     }
 
     return {
+      // 数据
       searchText,
+      loading,
       filteredList,
       showDetailPopup,
       showEditPopup,
       currentCard,
       editForm,
-      loading: computed(() => cardStore.loading),
-      handleAdd,
+
+      // 方法
+      handleSearch,
       handleClear,
+      handleAdd,
       showDetail,
       showEdit,
       handleEditBack,

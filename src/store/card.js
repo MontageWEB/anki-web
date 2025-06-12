@@ -1,137 +1,172 @@
 import { defineStore } from 'pinia'
-import storage from '@/utils/storage'
+import { getCardList, createCard, updateCard, deleteCard, getTodayCards } from '@/api/card'
 import { showToast } from 'vant'
 
 export const useCardStore = defineStore('card', {
   state: () => ({
-    cards: [],
+    allCards: [],
+    todayCards: [],
     loading: false,
-    initialized: false
+    initialized: false,
+    // 添加分页相关状态
+    pagination: {
+      total: 0,
+      page: 1,
+      per_page: 20
+    },
+    // 搜索关键词
+    searchText: ''
   }),
 
   getters: {
-    // 获取所有卡片
-    allCards: (state) => state.cards,
-
     // 获取今日需要复习的卡片
     todayReviewCards: (state) => {
       const now = new Date()
-      return state.cards.filter(card => {
+      return state.todayCards.filter(card => {
         const nextReviewTime = new Date(card.nextReviewTime)
         return nextReviewTime <= now
       })
     },
 
     // 获取卡片总数
-    totalCount: (state) => state.cards.length,
+    totalCount: (state) => state.allCards.length,
 
     // 获取今日待复习数量
     todayReviewCount: (state) => {
       const now = new Date()
-      return state.cards.filter(card => {
+      return state.todayCards.filter(card => {
         const nextReviewTime = new Date(card.nextReviewTime)
         return nextReviewTime <= now
       }).length
-    }
+    },
+
+    // 根据搜索文本过滤卡片
+    filteredCards: (state) => (searchText) => {
+      if (!searchText) return state.allCards
+      const lowerSearchText = searchText.toLowerCase()
+      return state.allCards.filter(card => 
+        card.title.toLowerCase().includes(lowerSearchText) ||
+        card.answer.toLowerCase().includes(lowerSearchText)
+      )
+    },
+
+    // 获取分页信息
+    paginationInfo: (state) => state.pagination
   },
 
   actions: {
-    // 初始化卡片数据
-    async initializeCards() {
-      if (this.initialized) return
+    // 初始化卡片列表
+    async initializeCards(params = {}) {
+      if (this.loading) return
       
       this.loading = true
       try {
-        const cards = await storage.getAllCards()
-        this.cards = cards
+        const response = await getCardList({
+          page: params.page || this.pagination.page,
+          per_page: params.per_page || this.pagination.per_page,
+          search: params.search || this.searchText
+        })
+
+        // 更新卡片列表和分页信息
+        this.allCards = response.items
+        this.pagination = {
+          total: response.total,
+          page: response.page,
+          per_page: response.per_page
+        }
         this.initialized = true
       } catch (error) {
-        showToast('初始化卡片数据失败')
-        console.error('初始化卡片数据失败:', error)
+        console.error('获取卡片列表失败:', error)
+        showToast('获取卡片列表失败')
       } finally {
         this.loading = false
       }
     },
 
-    // 刷新今日复习数据
+    // 设置搜索关键词并重新加载列表
+    async setSearchText(text) {
+      this.searchText = text
+      await this.initializeCards({ page: 1, search: text })
+    },
+
+    // 切换页码
+    async setPage(page) {
+      await this.initializeCards({ page })
+    },
+
+    // 获取今日待复习卡片
     async fetchTodayCards() {
+      if (this.loading) return
+      
       this.loading = true
       try {
-        const cards = await storage.getAllCards()
-        this.cards = cards
+        const cards = await getTodayCards()
+        this.todayCards = cards.map(card => ({
+          ...card,
+          isFlipped: false
+        }))
       } catch (error) {
-        showToast('刷新今日复习数据失败')
-        console.error('刷新今日复习数据失败:', error)
+        console.error('获取今日卡片失败:', error)
+        showToast('获取今日卡片失败')
       } finally {
         this.loading = false
       }
     },
 
-    // 添加卡片
-    async addCard(card) {
-      this.loading = true
+    // 创建新卡片
+    async createCard(cardData) {
       try {
-        const newCard = await storage.addCard(card)
-        this.cards.push(newCard)
+        const newCard = await createCard(cardData)
+        this.allCards.unshift(newCard)
         showToast({
           type: 'success',
-          message: '添加成功'
+          message: '创建成功'
         })
         return newCard
       } catch (error) {
-        showToast({
-          type: 'fail',
-          message: '添加失败'
-        })
+        console.error('创建卡片失败:', error)
         throw error
-      } finally {
-        this.loading = false
       }
     },
 
     // 更新卡片
-    async updateCard(id, updates) {
-      this.loading = true
+    async updateCard(id, data) {
       try {
-        const updatedCard = await storage.updateCard(id, updates)
-        const index = this.cards.findIndex(card => card.id === id)
+        const updatedCard = await updateCard(id, data)
+        const index = this.allCards.findIndex(card => card.id === id)
         if (index !== -1) {
-          this.cards[index] = updatedCard
+          this.allCards[index] = updatedCard
         }
-        showToast({
-          type: 'success',
-          message: '更新成功'
-        })
+        
+        // 如果卡片在今日列表中，也需要更新
+        const todayIndex = this.todayCards.findIndex(card => card.id === id)
+        if (todayIndex !== -1) {
+          this.todayCards[todayIndex] = {
+            ...updatedCard,
+            isFlipped: this.todayCards[todayIndex].isFlipped
+          }
+        }
+        
         return updatedCard
       } catch (error) {
-        showToast({
-          type: 'fail',
-          message: '更新失败'
-        })
+        console.error('更新卡片失败:', error)
         throw error
-      } finally {
-        this.loading = false
       }
     },
 
     // 删除卡片
     async deleteCard(id) {
-      this.loading = true
       try {
-        await storage.deleteCard(id)
-        this.cards = this.cards.filter(card => card.id !== id)
+        await deleteCard(id)
+        this.allCards = this.allCards.filter(card => card.id !== id)
+        this.todayCards = this.todayCards.filter(card => card.id !== id)
         showToast({
           type: 'success',
           message: '删除成功'
         })
       } catch (error) {
-        showToast({
-          type: 'fail',
-          message: '删除失败'
-        })
+        console.error('删除卡片失败:', error)
         throw error
-      } finally {
-        this.loading = false
       }
     },
 
@@ -140,9 +175,9 @@ export const useCardStore = defineStore('card', {
       this.loading = true
       try {
         const updatedCard = await storage.updateReviewRecord(id, nextReviewTime)
-        const index = this.cards.findIndex(card => card.id === id)
+        const index = this.allCards.findIndex(card => card.id === id)
         if (index !== -1) {
-          this.cards[index] = updatedCard
+          this.allCards[index] = updatedCard
         }
         return updatedCard
       } catch (error) {
