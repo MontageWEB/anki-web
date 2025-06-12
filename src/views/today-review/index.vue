@@ -155,7 +155,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { showSuccessToast, showToast, Swipe, SwipeItem } from 'vant'
 import storage from '@/utils/storage'
@@ -169,6 +169,16 @@ const currentIndex = ref(0)
 const showCalendar = ref(false)
 const minDate = ref(new Date())
 const currentEditingCard = ref(null)
+
+// 页面激活时刷新数据
+onActivated(async () => {
+  await fetchTodayCards()
+})
+
+// 初始化加载
+onMounted(async () => {
+  await fetchTodayCards()
+})
 
 // 格式化日期
 const formatDate = (dateString) => {
@@ -243,8 +253,8 @@ const handleForgotten = async (card) => {
 // 跳转到新增卡片页面
 const handleAdd = () => {
   router.push({
-    path: '/card/add',
-    query: { from: 'today-review' }
+    path: '/card/create',
+    query: { source: 'review' }
   })
 }
 
@@ -307,10 +317,6 @@ const handleReviewTimeUpdate = async () => {
     currentIndex.value = todayCards.value.length - 1
   }
 }
-
-onMounted(() => {
-  fetchTodayCards()
-})
 </script>
 
 <style lang="scss" scoped>

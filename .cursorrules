@@ -569,3 +569,82 @@ class StorageService {
    1. 添加 scoped 属性
    2. 使用 BEM 命名规范
    3. 避免使用全局选择器 
+
+## 卡片接口规范
+
+### API 路径规范
+- 卡片相关接口统一使用 `/api/v1/cards` 作为基础路径
+- 遵循 RESTful API 设计规范
+- 使用复数形式命名资源（如 cards 而不是 card）
+
+### 字段映射规范
+✅ 前后端字段映射规则：
+```javascript
+// 前端字段 -> 后端字段
+{
+  title: 'question',      // 问题/标题
+  answer: 'answer',       // 答案
+  createdAt: 'created_at' // 创建时间
+}
+```
+
+### 错误处理规范
+- 422 状态码（Unprocessable Entity）处理：
+  - 检查请求数据结构是否符合后端要求
+  - 确保所有必填字段都已提供
+  - 验证字段命名是否与后端一致
+
+### 组件命名规范
+✅ 推荐做法：
+- 新增卡片组件统一使用 `create.vue`
+- 编辑卡片组件统一使用 `edit.vue`
+- 卡片详情组件统一使用 `detail.vue`
+
+❌ 避免做法：
+- 使用 `add.vue` 作为新增组件名
+- 组件命名不一致（如混用 add/create）
+- 未遵循 kebab-case 命名约定
+
+### 数据转换规范
+- 前端展示数据和后端数据结构需要进行统一转换
+- 在 API 层处理数据转换，而不是在组件中
+- 使用专门的转换函数处理字段映射
+- 保持转换函数的单一职责
+
+### 表单处理规范
+- 统一使用 Vant 的 Form 组件
+- 必须进行表单验证
+- 提交前清空不必要的字段
+- 处理所有可能的错误情况
+
+### 路由处理规范
+- 二级及以下层级页面要保持其一级导航栏的高亮状态
+- 路由配置示例：
+  ```javascript
+  {
+    path: '/card/create',
+    name: 'card-create',
+    component: () => import('@/views/card/create.vue'),
+    meta: {
+      title: '新增卡片',
+      parent: '/card/list'  // 标记父级路由，保持卡片库导航项高亮
+    }
+  }
+  ```
+- TabBar 组件中的高亮判断：
+  ```javascript
+  const isActive = (path) => {
+    return route.path === path || route.meta.parent === path
+  }
+  ```
+
+- 保存成功后的跳转逻辑：
+  - 从今日复习进入：返回复习页面
+  - 从卡片库进入：返回卡片库
+  - 从底部导航进入：返回首页
+
+### 状态管理规范
+- 使用 Pinia 管理卡片相关状态
+- 统一在 store/card.js 中处理卡片数据
+- 处理 loading 和错误状态
+- 提供清晰的 action 命名 

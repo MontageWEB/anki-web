@@ -33,7 +33,7 @@
           <div class="card-content" @click="showDetail(item)">
             <div class="title">{{ item.title }}</div>
             <div class="info">
-              <span class="time">创建时间：{{ formatDate(item.createTime) }}</span>
+              <span class="time">创建时间：{{ formatDate(item.createdAt) }}</span>
               <span class="count">已复习：{{ item.reviewCount }}次</span>
               <NextReviewTime :card="item" @update="handleReviewTimeUpdate" />
             </div>
@@ -98,7 +98,7 @@
         <div class="card-info">
           <div class="info-item">
             <span class="label">创建时间</span>
-            <span class="value">{{ formatDate(currentCard.createTime) }}</span>
+            <span class="value">{{ formatDate(currentCard.createdAt) }}</span>
           </div>
           <div class="info-item">
             <span class="label">已复习次数</span>
@@ -171,7 +171,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed, onMounted } from 'vue'
+import { defineComponent, ref, computed, onMounted, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast, showDialog, Popup } from 'vant'
 import { formatDate } from '@/utils/date'
@@ -209,6 +209,11 @@ export default defineComponent({
       )
     })
 
+    // 页面激活时刷新数据
+    onActivated(async () => {
+      await cardStore.initializeCards()
+    })
+
     // 初始化加载
     onMounted(async () => {
       await cardStore.initializeCards()
@@ -228,8 +233,8 @@ export default defineComponent({
     // 新增卡片
     const handleAdd = () => {
       router.push({
-        path: '/card/add',
-        query: { from: 'list' }
+        path: '/card/create',
+        query: { source: 'list' }
       })
     }
 
