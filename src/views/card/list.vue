@@ -127,14 +127,25 @@
           <van-icon name="arrow-left" @click="handleEditBack" />
           <span class="title">编辑卡片</span>
         </div>
-        <van-button
-          plain
-          type="primary"
-          size="small"
-          @click="handleSave"
-        >
-          保存
-        </van-button>
+        <div class="right">
+          <van-button
+            plain
+            type="danger"
+            size="small"
+            class="delete-btn"
+            @click="handleDelete(editForm.id)"
+          >
+            删除
+          </van-button>
+          <van-button
+            plain
+            type="primary"
+            size="small"
+            @click="handleSave"
+          >
+            保存
+          </van-button>
+        </div>
       </div>
       <div class="popup-content">
         <div class="form">
@@ -239,9 +250,14 @@ export default defineComponent({
     }
 
     // 显示详情
-    const showDetail = (item) => {
-      currentCard.value = item
-      showDetailPopup.value = true
+    const showDetail = async (item) => {
+      try {
+        const card = await cardStore.getCardDetail(item.id)
+        currentCard.value = card
+        showDetailPopup.value = true
+      } catch (error) {
+        console.error('获取卡片详情失败:', error)
+      }
     }
 
     // 显示编辑
@@ -323,12 +339,26 @@ export default defineComponent({
 
     // 处理复习时间更新
     const handleReviewTimeUpdate = async () => {
+      // 重新获取卡片列表数据
       await cardStore.initializeCards()
+      // 更新搜索结果
+      if (searchText.value) {
+        filteredList.value = cardStore.filteredCards(searchText.value)
+      } else {
+        filteredList.value = cardStore.allCards
+      }
     }
 
     // 处理详情页中的复习时间更新
     const handleDetailReviewTimeUpdate = async () => {
+      // 重新获取卡片列表数据
       await cardStore.initializeCards()
+      // 更新搜索结果
+      if (searchText.value) {
+        filteredList.value = cardStore.filteredCards(searchText.value)
+      } else {
+        filteredList.value = cardStore.allCards
+      }
       // 更新当前显示的卡片
       const updatedCard = cardStore.allCards.find(card => card.id === currentCard.value.id)
       if (updatedCard) {
@@ -451,9 +481,18 @@ export default defineComponent({
     }
   }
 
+  .right {
+    display: flex;
+    gap: 8px;
+  }
+
   .title {
     font-size: 16px;
     font-weight: 500;
+  }
+
+  .delete-btn {
+    margin-right: 8px;
   }
 }
 

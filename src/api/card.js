@@ -109,4 +109,32 @@ export function getTodayCards() {
     per_page: response.per_page,
     items: response.items.map(transformCard)
   }))
+}
+
+/**
+ * 获取卡片详情
+ * @param {string} id 卡片ID
+ * @returns {Promise<Object>} 卡片详情数据
+ */
+export function getCardDetail(id) {
+  return request({
+    url: `/api/v1/cards/${id}`,
+    method: 'get'
+  }).then(transformCard)
+}
+
+/**
+ * 修改卡片下次复习时间
+ * @param {string} id 卡片ID
+ * @param {string} nextReviewAt ISO 8601格式的日期时间
+ * @returns {Promise<Object>} 更新后的卡片
+ */
+export function updateNextReviewTime(id, nextReviewAt) {
+  return request({
+    url: `/api/v1/cards/${id}/next-review`,
+    method: 'put',
+    data: {
+      next_review_at: nextReviewAt
+    }
+  }).then(transformCard)
 } 

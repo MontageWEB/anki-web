@@ -24,7 +24,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { showSuccessToast, showToast } from 'vant'
-import storage from '@/utils/storage'
+import { useCardStore } from '@/store/card'
+
+const cardStore = useCardStore()
 
 const props = defineProps({
   card: {
@@ -57,11 +59,8 @@ const handleClick = (event) => {
 // 处理日期确认
 const handleDateConfirm = async (date) => {
   try {
-    // 更新下次复习时间，保持其他参数不变
-    await storage.updateCard(props.card.id, {
-      ...props.card,
-      nextReviewTime: date.toISOString()
-    })
+    // 使用新的 API 更新下次复习时间
+    await cardStore.updateNextReviewTime(props.card.id, date.toISOString())
     
     showCalendar.value = false
     showSuccessToast('下次复习时间已更新')

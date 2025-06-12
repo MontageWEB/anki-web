@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getCardList, createCard, updateCard, deleteCard, getTodayCards } from '@/api/card'
+import { getCardList, createCard, updateCard, deleteCard, getTodayCards, getCardDetail, updateNextReviewTime } from '@/api/card'
 import { showToast } from 'vant'
 
 export const useCardStore = defineStore('card', {
@@ -185,6 +185,61 @@ export const useCardStore = defineStore('card', {
           type: 'fail',
           message: '更新复习记录失败'
         })
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // 获取卡片详情
+    async getCardDetail(id) {
+      if (this.loading) return
+      
+      this.loading = true
+      try {
+        const card = await getCardDetail(id)
+        return card
+      } catch (error) {
+        console.error('获取卡片详情失败:', error)
+        showToast('获取卡片详情失败')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // 修改下次复习时间
+    async updateNextReviewTime(id, nextReviewAt) {
+      if (this.loading) return
+      
+      this.loading = true
+      try {
+        const updatedCard = await updateNextReviewTime(id, nextReviewAt)
+        
+        // 更新 allCards 中的卡片
+        const index = this.allCards.findIndex(card => card.id === id)
+        if (index !== -1) {
+          this.allCards[index] = updatedCard
+        }
+        
+        // 更新 todayCards 中的卡片
+        const todayIndex = this.todayCards.findIndex(card => card.id === id)
+        if (todayIndex !== -1) {
+          // 如果新的复习时间超过今天，从今日复习列表中移除
+          const today = new Date()
+          today.setHours(23, 59, 59, 999)
+          
+          if (new Date(nextReviewAt) > today) {
+            this.todayCards.splice(todayIndex, 1)
+          } else {
+            this.todayCards[todayIndex] = updatedCard
+          }
+        }
+        
+        return updatedCard
+      } catch (error) {
+        console.error('修改下次复习时间失败:', error)
+        showToast('修改下次复习时间失败')
         throw error
       } finally {
         this.loading = false
