@@ -19,6 +19,8 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+@use '@/styles/_variables' as *;
+
 .settings {
   min-height: 100vh;
   background-color: $color-background;
