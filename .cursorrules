@@ -648,3 +648,10 @@ class StorageService {
 - 统一在 store/card.js 中处理卡片数据
 - 处理 loading 和错误状态
 - 提供清晰的 action 命名 
+
+## 经验总结
+
+### 日期选择与时区处理规范
+- 在与后端交互时，涉及日期选择器（如复习时间）必须将用户选择的日期统一设置为当天的 23:59:59.999 后再转为 ISO 字符串传递，避免因时区差异导致日期提前一天。
+- 相关实现参考 src/components/common/NextReviewTime.vue 的 handleDateConfirm 方法。
+- 任何涉及日期的 API 交互，均需明确时间精度，确保与用户预期一致。 

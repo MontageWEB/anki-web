@@ -34,8 +34,8 @@ function transformCardToBackend(card) {
  * @param {Object} params 查询参数
  * @param {number} params.page 页码，默认 1
  * @param {number} params.per_page 每页数量，默认 20
- * @param {string} params.search 搜索关键词（可选）
- * @returns {Promise<Object>} 卡片列表数据，包含分页信息
+ * @param {string} [params.search] 搜索关键词
+ * @returns {Promise<Object>} 卡片列表数据
  */
 export function getCardList(params = {}) {
   return request({
@@ -97,12 +97,19 @@ export function deleteCard(id) {
 
 /**
  * 获取今日待复习卡片
- * @returns {Promise<Array>} 今日待复习的卡片列表
+ * @param {Object} params 查询参数
+ * @param {number} params.page 页码，默认 1
+ * @param {number} params.per_page 每页数量，默认 20
+ * @returns {Promise<Object>} 今日待复习的卡片列表
  */
-export function getTodayCards() {
+export function getTodayCards(params = {}) {
   return request({
     url: '/api/v1/cards/review',
-    method: 'get'
+    method: 'get',
+    params: {
+      page: params.page || 1,
+      per_page: params.per_page || 20
+    }
   }).then(response => ({
     total: response.total,
     page: response.page,
@@ -135,6 +142,22 @@ export function updateNextReviewTime(id, nextReviewAt) {
     method: 'put',
     data: {
       next_review_at: nextReviewAt
+    }
+  }).then(transformCard)
+}
+
+/**
+ * 更新卡片复习状态
+ * @param {string} id 卡片ID
+ * @param {boolean} remembered 是否记住
+ * @returns {Promise<Object>} 更新后的卡片
+ */
+export function updateReviewStatus(id, remembered) {
+  return request({
+    url: `/api/v1/cards/${id}/review`,
+    method: 'post',
+    data: {
+      remembered
     }
   }).then(transformCard)
 } 

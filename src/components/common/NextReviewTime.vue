@@ -18,6 +18,8 @@
     teleport="body"
     position="bottom"
     :close-on-click-overlay="true"
+    :default-date="calendarDefaultDate"
+    :formatter="calendarFormatter"
   />
 </template>
 
@@ -49,6 +51,36 @@ const formattedDate = computed(() => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 })
 
+// 日历默认选中日期（卡片的下次复习时间）
+const calendarDefaultDate = computed(() => {
+  return props.card.nextReviewTime ? new Date(props.card.nextReviewTime) : new Date()
+})
+
+// 日历自定义样式：高亮今天和当前选中日期
+const calendarFormatter = (day) => {
+  const today = new Date()
+  const isToday =
+    day.date.getFullYear() === today.getFullYear() &&
+    day.date.getMonth() === today.getMonth() &&
+    day.date.getDate() === today.getDate()
+  const isSelected =
+    props.card.nextReviewTime &&
+    day.date.getFullYear() === new Date(props.card.nextReviewTime).getFullYear() &&
+    day.date.getMonth() === new Date(props.card.nextReviewTime).getMonth() &&
+    day.date.getDate() === new Date(props.card.nextReviewTime).getDate()
+
+  if (isToday && isSelected) {
+    day.topInfo = '今天'
+    day.className = 'calendar-today-selected'
+  } else if (isToday) {
+    day.topInfo = '今天'
+    day.className = 'calendar-today'
+  } else if (isSelected) {
+    day.className = 'calendar-selected'
+  }
+  return day
+}
+
 // 处理点击事件
 const handleClick = (event) => {
   event.preventDefault() // 阻止默认行为
@@ -59,8 +91,12 @@ const handleClick = (event) => {
 // 处理日期确认
 const handleDateConfirm = async (date) => {
   try {
+    // 将日期设置为当天的 23:59:59
+    const nextReviewAt = new Date(date)
+    nextReviewAt.setHours(23, 59, 59, 999)
+    
     // 使用新的 API 更新下次复习时间
-    await cardStore.updateNextReviewTime(props.card.id, date.toISOString())
+    await cardStore.updateNextReviewTime(props.card.id, nextReviewAt.toISOString())
     
     showCalendar.value = false
     showSuccessToast('下次复习时间已更新')
@@ -108,5 +144,21 @@ const handleDateConfirm = async (date) => {
 
 :deep(.van-popup) {
   z-index: 2000;
+}
+
+:deep(.calendar-today) {
+  background: #e6f7ff !important;
+  color: #1890ff !important;
+  border-radius: 50%;
+}
+:deep(.calendar-selected) {
+  background: #1989fa !important;
+  color: #fff !important;
+  border-radius: 50%;
+}
+:deep(.calendar-today-selected) {
+  background: linear-gradient(135deg, #1989fa 60%, #e6f7ff 100%) !important;
+  color: #fff !important;
+  border-radius: 50%;
 }
 </style> 

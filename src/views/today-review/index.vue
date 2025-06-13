@@ -158,10 +158,11 @@
 import { ref, onMounted, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { showSuccessToast, showToast, Swipe, SwipeItem } from 'vant'
-import storage from '@/utils/storage'
+import { useCardStore } from '@/store/card'
 import NextReviewTime from '@/components/common/NextReviewTime.vue'
 
 const router = useRouter()
+const cardStore = useCardStore()
 const todayCards = ref([])
 const currentIndex = ref(0)
 
@@ -188,16 +189,16 @@ const formatDate = (dateString) => {
 
 // 获取今日需要复习的卡片
 const fetchTodayCards = async () => {
-  const allCards = await storage.getAllCards()
-  const today = new Date()
-  today.setHours(23, 59, 59, 999)  // 设置为今天的 23:59:59.999
-  
-  todayCards.value = allCards
-    .filter(card => new Date(card.nextReviewTime) <= today)
-    .map(card => ({
-      ...card,
-      isFlipped: false
-    }))
+  try {
+    await cardStore.fetchTodayCards({
+      page: 1,
+      per_page: 100 // 获取足够多的卡片
+    })
+    todayCards.value = cardStore.todayCards
+  } catch (error) {
+    console.error('获取今日卡片失败:', error)
+    showToast('获取今日卡片失败')
+  }
 }
 
 // 计算下次复习时间
@@ -233,21 +234,24 @@ const handleCardChange = (index) => {
 
 // 处理掌握按钮点击
 const handleMastered = async (card) => {
-  const nextReviewTime = calculateNextReviewTime(card.reviewCount + 1)
-  await storage.updateReviewRecord(card.id, nextReviewTime)
-  showSuccessToast('已掌握，下次复习时间已更新')
-  await fetchTodayCards()
+  try {
+    await cardStore.updateReviewStatus(card.id, true)
+    showSuccessToast('已掌握，下次复习时间已更新')
+    await fetchTodayCards()
+  } catch (error) {
+    console.error('更新复习状态失败:', error)
+  }
 }
 
 // 处理忘记按钮点击
 const handleForgotten = async (card) => {
-  const nextReviewTime = new Date() // 立即复习
-  await storage.updateCard(card.id, {
-    reviewCount: 0,
-    nextReviewTime: nextReviewTime.toISOString()
-  })
-  showSuccessToast('已重置，需要重新开始复习')
-  await fetchTodayCards()
+  try {
+    await cardStore.updateReviewStatus(card.id, false)
+    showSuccessToast('已重置，需要重新开始复习')
+    await fetchTodayCards()
+  } catch (error) {
+    console.error('更新复习状态失败:', error)
+  }
 }
 
 // 跳转到新增卡片页面
@@ -269,11 +273,7 @@ const handleDateConfirm = async (date) => {
   if (!currentEditingCard.value) return
   
   try {
-    // 更新下次复习时间，保持其他参数不变
-    await storage.updateCard(currentEditingCard.value.id, {
-      ...currentEditingCard.value,
-      nextReviewTime: date.toISOString()
-    })
+    await cardStore.updateNextReviewTime(currentEditingCard.value.id, date.toISOString())
     
     // 关闭日历选择器
     showCalendar.value = false

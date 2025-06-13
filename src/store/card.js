@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getCardList, createCard, updateCard, deleteCard, getTodayCards, getCardDetail, updateNextReviewTime } from '@/api/card'
+import { getCardList, createCard, updateCard, deleteCard, getTodayCards, getCardDetail, updateNextReviewTime, updateReviewStatus } from '@/api/card'
 import { showToast } from 'vant'
 
 export const useCardStore = defineStore('card', {
@@ -55,7 +55,7 @@ export const useCardStore = defineStore('card', {
   },
 
   actions: {
-    // 初始化卡片列表
+    // 获取卡片列表
     async initializeCards(params = {}) {
       if (this.loading) return
       
@@ -66,15 +66,13 @@ export const useCardStore = defineStore('card', {
           per_page: params.per_page || this.pagination.per_page,
           search: params.search || this.searchText
         })
-
-        // 更新卡片列表和分页信息
+        
         this.allCards = response.items
         this.pagination = {
           total: response.total,
           page: response.page,
           per_page: response.per_page
         }
-        this.initialized = true
       } catch (error) {
         console.error('获取卡片列表失败:', error)
         showToast('获取卡片列表失败')
@@ -95,13 +93,17 @@ export const useCardStore = defineStore('card', {
     },
 
     // 获取今日待复习卡片
-    async fetchTodayCards() {
+    async fetchTodayCards(params = {}) {
       if (this.loading) return
       
       this.loading = true
       try {
-        const cards = await getTodayCards()
-        this.todayCards = cards.map(card => ({
+        const response = await getTodayCards({
+          page: params.page || 1,
+          per_page: params.per_page || 20
+        })
+        
+        this.todayCards = response.items.map(card => ({
           ...card,
           isFlipped: false
         }))
@@ -240,6 +242,44 @@ export const useCardStore = defineStore('card', {
       } catch (error) {
         console.error('修改下次复习时间失败:', error)
         showToast('修改下次复习时间失败')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // 更新复习状态
+    async updateReviewStatus(id, remembered) {
+      if (this.loading) return
+      
+      this.loading = true
+      try {
+        const updatedCard = await updateReviewStatus(id, remembered)
+        
+        // 更新 allCards 中的卡片
+        const index = this.allCards.findIndex(card => card.id === id)
+        if (index !== -1) {
+          this.allCards[index] = updatedCard
+        }
+        
+        // 更新 todayCards 中的卡片
+        const todayIndex = this.todayCards.findIndex(card => card.id === id)
+        if (todayIndex !== -1) {
+          // 如果新的复习时间超过今天，从今日复习列表中移除
+          const today = new Date()
+          today.setHours(23, 59, 59, 999)
+          
+          if (new Date(updatedCard.nextReviewTime) > today) {
+            this.todayCards.splice(todayIndex, 1)
+          } else {
+            this.todayCards[todayIndex] = updatedCard
+          }
+        }
+        
+        return updatedCard
+      } catch (error) {
+        console.error('更新复习状态失败:', error)
+        showToast('更新复习状态失败')
         throw error
       } finally {
         this.loading = false
