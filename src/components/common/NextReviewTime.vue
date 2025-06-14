@@ -47,24 +47,16 @@ const minDate = new Date(2020, 0, 1)
 
 // 格式化日期
 const formattedDate = computed(() => {
-  console.log('卡片数据:', props.card)
-  console.log('nextReviewTime:', props.card.nextReviewTime)
-  
   if (!props.card.nextReviewTime) {
-    console.log('nextReviewTime 为空')
     return '未设置'
   }
   
   try {
     // 处理日期字符串，移除可能存在的 +00:00Z 后缀
     const dateStr = props.card.nextReviewTime.replace('+00:00Z', 'Z')
-    console.log('处理后的日期字符串:', dateStr)
-    
     const date = new Date(dateStr)
-    console.log('转换后的日期对象:', date)
     
     if (isNaN(date.getTime())) {
-      console.log('日期无效')
       return '日期无效'
     }
     
@@ -76,9 +68,7 @@ const formattedDate = computed(() => {
       timeZone: 'Asia/Shanghai'
     })
     
-    const formatted = formatter.format(date)
-    console.log('格式化后的日期:', formatted)
-    return formatted
+    return formatter.format(date)
   } catch (error) {
     console.error('日期格式化错误:', error)
     return '日期无效'

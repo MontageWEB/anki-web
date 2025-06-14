@@ -6,8 +6,6 @@ import request from '@/utils/request'
  * @returns {Object} 前端卡片数据
  */
 function transformCard(card) {
-  console.log('原始卡片数据:', card)
-  
   // 处理日期字段
   const processDate = (dateStr) => {
     if (!dateStr) return null
@@ -24,13 +22,10 @@ function transformCard(card) {
   
   // 检查 next_review_at 是否有效
   let nextReviewTime = processDate(card.next_review_at)
-  console.log('处理后的 nextReviewTime:', nextReviewTime)
   
   // 处理创建时间和更新时间
   const createdAt = processDate(card.created_at)
   const updatedAt = processDate(card.updated_at)
-  console.log('处理后的 createdAt:', createdAt)
-  console.log('处理后的 updatedAt:', updatedAt)
 
   const transformedCard = {
     id: card.id,
@@ -42,7 +37,6 @@ function transformCard(card) {
     updatedAt
   }
   
-  console.log('转换后的卡片数据:', transformedCard)
   return transformedCard
 }
 
