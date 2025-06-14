@@ -324,64 +324,93 @@ const handleReviewTimeUpdate = async () => {
 
 .today-review {
   min-height: 100vh;
-  background-color: #f7f9fc;
-  padding: $spacing-medium;
-  
+  background: #f6f8fa;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   .custom-nav {
-    background-color: transparent;
-    
+    background: #f6f8fa;
+    box-shadow: none;
     :deep(.van-nav-bar__title) {
-      color: #2c3e50;
-      font-weight: 600;
+      color: #222;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 1px;
     }
-    
     :deep(.van-icon) {
-      color: #2c3e50;
+      color: #338aff;
+      font-size: 24px;
     }
   }
 }
 
 .card-container {
-  margin-top: calc($spacing-large * 2);
-  height: calc(100vh - 180px);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 66vh;
+  min-height: 320px;
   position: relative;
-  
   :deep(.van-swipe) {
     height: 100%;
+    width: 100%;
   }
-  
   :deep(.van-swipe-item) {
     height: 100%;
-    padding: $spacing-medium;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
 .review-card {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  min-height: 360px;
   position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-style: preserve-3d;
-  
-  &.is-flipped {
-    transform: rotateY(180deg);
-  }
-}
-
-.card-face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 24px;
-  padding: $spacing-large;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px 0 rgba(51,138,255,0.06);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-  
-  &.card-back {
+  justify-content: center;
+  padding: 48px 28px 32px 28px;
+  transition: box-shadow 0.2s;
+  border: 1.5px solid #e3eaf1;
+  perspective: 1200px;
+  .card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: none;
+    border-radius: 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: none;
+    backface-visibility: hidden;
+    transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .card-front {
+    background: #fff;
+    z-index: 2;
+    transform: rotateY(0deg);
+  }
+  .card-back {
+    background: #fff;
+    z-index: 1;
     transform: rotateY(180deg);
+  }
+  &.is-flipped .card-front {
+    transform: rotateY(-180deg);
+  }
+  &.is-flipped .card-back {
+    transform: rotateY(0deg);
+    z-index: 3;
   }
 }
 
@@ -389,102 +418,87 @@ const handleReviewTimeUpdate = async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  
+  align-items: center;
+  justify-content: center;
   .card-label {
-    font-size: 14px;
-    color: #8696a7;
-    margin-bottom: $spacing-medium;
-    font-weight: 500;
+    font-size: 13px;
+    color: #338aff;
+    margin-bottom: 18px;
+    font-weight: 600;
+    letter-spacing: 1px;
   }
-  
   .card-text-wrapper {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
+    min-height: 60px;
+    margin-bottom: 32px;
   }
-  
   .card-text {
-    font-size: 20px;
-    line-height: 1.6;
-    color: #2c3e50;
+    font-size: 22px;
+    line-height: 1.7;
+    color: #222;
     text-align: center;
     margin: 0;
-    padding: 0 $spacing-medium;
-    white-space: pre-wrap;
+    padding: 0 8px;
+    font-weight: 500;
+    word-break: break-word;
   }
 }
 
 .card-footer {
-  margin-top: auto;
-  padding-top: $spacing-large;
-  padding-bottom: 60px;
-}
-
-.card-info {
-  margin-bottom: $spacing-large;
-  
-  .info-item {
+  padding-bottom: 32px;
+  padding-left: 16px;
+  padding-right: 16px;
+  box-sizing: border-box;
+  margin-top: 32px;
+  padding-top: 0;
+  .card-info {
+    margin-bottom: 28px;
     display: flex;
-    align-items: center;
-    color: #8696a7;
-    font-size: 14px;
-    margin-bottom: $spacing-small;
-    
-    &:last-child {
-      cursor: pointer;  // 添加手型光标
-      
-      &:hover {
-        color: #34c759;  // 悬停时变色
-        
-        .van-icon {
-          color: #34c759;
-        }
+    flex-wrap: wrap;
+    gap: 16px;
+    .info-item {
+      display: flex;
+      align-items: center;
+      color: #b0b8c1;
+      font-size: 13px;
+      .van-icon {
+        margin-right: 4px;
+        font-size: 15px;
+        color: #b0b8c1;
       }
-    }
-    
-    .van-icon {
-      margin-right: $spacing-small;
-      font-size: 16px;
-      transition: color 0.3s;  // 添加颜色过渡效果
+      .created-at {
+        margin-left: 4px;
+      }
     }
   }
-}
-
-.card-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: $spacing-medium;
-  
-  .action-btn {
-    flex: 1;
-    height: 44px;
-    font-size: 16px;
-    font-weight: 500;
-    border-radius: 12px;
-    
-    :deep(.van-icon) {
-      font-size: 18px;
-      margin-right: 4px;
-    }
-    
-    &.success-btn {
-      background-color: #34c759;
-      border-color: #34c759;
-      
-      &:active {
-        background-color: darken(#34c759, 5%);
-        border-color: darken(#34c759, 5%);
+  .card-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 0;
+    .action-btn {
+      flex: 1;
+      height: 40px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 20px;
+      border: none;
+      box-shadow: none;
+      :deep(.van-icon) {
+        font-size: 18px;
+        margin-right: 4px;
       }
-    }
-    
-    &.danger-btn {
-      background-color: #ff3b30;
-      border-color: #ff3b30;
-      
-      &:active {
-        background-color: darken(#ff3b30, 5%);
-        border-color: darken(#ff3b30, 5%);
+      &.success-btn {
+        background: #338aff;
+        color: #fff;
+      }
+      &.danger-btn {
+        background: #e3eaf1;
+        color: #338aff;
       }
     }
   }
@@ -492,27 +506,24 @@ const handleReviewTimeUpdate = async () => {
 
 .progress-indicator {
   position: absolute;
-  bottom: $spacing-small;
+  bottom: 200px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(44, 62, 80, 0.8);
-  color: white;
-  padding: 4px 12px;
+  background: #e3eaf1;
+  color: #338aff;
+  padding: 4px 18px;
   border-radius: 16px;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   z-index: 10;
-  backdrop-filter: blur(4px);
-  
+  box-shadow: none;
   .current {
-    color: #ffffff;
+    color: #338aff;
   }
-  
   .separator {
     margin: 0 4px;
     opacity: 0.7;
   }
-  
   .total {
     opacity: 0.7;
   }
@@ -523,11 +534,17 @@ const handleReviewTimeUpdate = async () => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  
   :deep(.van-empty__description) {
-    color: #8696a7;
+    color: #b0b8c1;
     font-size: 16px;
-    margin-top: $spacing-medium;
+    margin-top: 18px;
+  }
+  .empty-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 60px;
+    object-fit: cover;
+    box-shadow: 0 8px 16px rgba(51,138,255,0.08);
   }
 }
 
