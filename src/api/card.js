@@ -6,15 +6,44 @@ import request from '@/utils/request'
  * @returns {Object} 前端卡片数据
  */
 function transformCard(card) {
-  return {
+  console.log('原始卡片数据:', card)
+  
+  // 处理日期字段
+  const processDate = (dateStr) => {
+    if (!dateStr) return null
+    try {
+      // 处理日期字符串，移除可能存在的 +00:00Z 后缀
+      const processedStr = dateStr.replace('+00:00Z', 'Z')
+      const date = new Date(processedStr)
+      return !isNaN(date.getTime()) ? processedStr : null
+    } catch (error) {
+      console.error('日期转换错误:', error)
+      return null
+    }
+  }
+  
+  // 检查 next_review_at 是否有效
+  let nextReviewTime = processDate(card.next_review_at)
+  console.log('处理后的 nextReviewTime:', nextReviewTime)
+  
+  // 处理创建时间和更新时间
+  const createdAt = processDate(card.created_at)
+  const updatedAt = processDate(card.updated_at)
+  console.log('处理后的 createdAt:', createdAt)
+  console.log('处理后的 updatedAt:', updatedAt)
+
+  const transformedCard = {
     id: card.id,
     title: card.question,
     answer: card.answer,
-    nextReviewTime: card.next_review_at,
-    reviewCount: card.review_count,
-    createdAt: card.created_at,
-    updatedAt: card.updated_at
+    nextReviewTime,
+    reviewCount: card.review_count || 0,
+    createdAt,
+    updatedAt
   }
+  
+  console.log('转换后的卡片数据:', transformedCard)
+  return transformedCard
 }
 
 /**

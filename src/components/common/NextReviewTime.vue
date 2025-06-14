@@ -47,13 +47,59 @@ const minDate = new Date(2020, 0, 1)
 
 // 格式化日期
 const formattedDate = computed(() => {
-  const date = new Date(props.card.nextReviewTime)
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  console.log('卡片数据:', props.card)
+  console.log('nextReviewTime:', props.card.nextReviewTime)
+  
+  if (!props.card.nextReviewTime) {
+    console.log('nextReviewTime 为空')
+    return '未设置'
+  }
+  
+  try {
+    // 处理日期字符串，移除可能存在的 +00:00Z 后缀
+    const dateStr = props.card.nextReviewTime.replace('+00:00Z', 'Z')
+    console.log('处理后的日期字符串:', dateStr)
+    
+    const date = new Date(dateStr)
+    console.log('转换后的日期对象:', date)
+    
+    if (isNaN(date.getTime())) {
+      console.log('日期无效')
+      return '日期无效'
+    }
+    
+    // 使用 Intl.DateTimeFormat 来格式化日期，这样可以正确处理时区
+    const formatter = new Intl.DateTimeFormat('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'Asia/Shanghai'
+    })
+    
+    const formatted = formatter.format(date)
+    console.log('格式化后的日期:', formatted)
+    return formatted
+  } catch (error) {
+    console.error('日期格式化错误:', error)
+    return '日期无效'
+  }
 })
 
 // 日历默认选中日期（卡片的下次复习时间）
 const calendarDefaultDate = computed(() => {
-  return props.card.nextReviewTime ? new Date(props.card.nextReviewTime) : new Date()
+  if (!props.card.nextReviewTime) {
+    return new Date()
+  }
+  
+  try {
+    // 处理日期字符串，移除可能存在的 +00:00Z 后缀
+    const dateStr = props.card.nextReviewTime.replace('+00:00Z', 'Z')
+    const date = new Date(dateStr)
+    return isNaN(date.getTime()) ? new Date() : date
+  } catch (error) {
+    console.error('日期转换错误:', error)
+    return new Date()
+  }
 })
 
 // 日历自定义样式：高亮今天和当前选中日期
