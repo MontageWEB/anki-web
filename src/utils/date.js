@@ -53,6 +53,8 @@ export function getRelativeTime(targetDate) {
 
   if (diffDays < 0) return '已过期';
   if (diffDays === 0) return '今天';
+  if (diffDays === 1) return '明天';
+  if (diffDays === 2) return '后天';
   if (diffDays < 7) {
     return `${diffDays}天后`;
   } else if (diffDays < 28) {
