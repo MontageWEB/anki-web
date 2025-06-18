@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anki复习助手 - 原型设计</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Anki复习助手 - 原型设计</h1>
+        
+        <!-- 原型展示区域 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- 登录页面 -->
+            <div class="prototype-container">
+                <h2 class="text-xl font-semibold mb-4">登录页面</h2>
+                <div class="iphone-frame">
+                    <div class="iphone-notch"></div>
+                    <div class="iphone-screen flex flex-col justify-center items-center">
+                        <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=facearea&w=96&h=96&facepad=2" alt="logo" class="w-20 h-20 rounded-full mb-6 shadow-md">
+                        <div class="text-2xl font-bold mb-2">欢迎使用 Anki复习助手</div>
+                        <div class="text-gray-500 mb-8">高效记忆，轻松复习</div>
+                        <button id="login-btn" class="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-lg bg-green-500 text-white text-lg font-semibold shadow hover:bg-green-600 transition mb-4">
+                            <i class="fab fa-weixin text-2xl"></i>
+                            微信一键登录
+                        </button>
+                        <div id="login-loading" class="hidden flex items-center gap-2 text-green-600 text-base mb-2">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            登录中...
+                        </div>
+                        <div id="login-error" class="hidden text-red-500 text-base mt-2">登录失败，请重试</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 今日复习页面 -->
+            <div class="prototype-container">
+                <h2 class="text-xl font-semibold mb-4">今日复习</h2>
+                <div class="iphone-frame">
+                    <div class="iphone-notch"></div>
+                    <div class="iphone-screen">
+                        <div class="app-header">
+                            <h1 class="text-lg font-semibold">今日复习</h1>
+                            <button class="add-btn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="card-container">
+                            <div class="flashcard">
+                                <div class="card-front">
+                                    <div class="card-content">
+                                        <h3 class="card-title">JavaScript 闭包的概念</h3>
+                                        <p class="card-meta">创建于 2024-03-20</p>
+                                        <p class="card-meta">已复习 3 次</p>
+                                        <p class="card-meta">下次复习：今天</p>
+                                    </div>
+                                    <div class="card-actions">
+                                        <button class="btn-master">掌握</button>
+                                        <button class="btn-forget">忘记</button>
+                                    </div>
+                                </div>
+                                <div class="card-back">
+                                    <div class="card-content">
+                                        <h3 class="card-title">答案</h3>
+                                        <p class="card-text">闭包是指有权访问另一个函数作用域中的变量的函数。创建闭包的常见方式是在一个函数内部创建另一个函数。</p>
+                                        <p class="card-meta">创建于 2024-03-20</p>
+                                        <p class="card-meta">已复习 3 次</p>
+                                        <p class="card-meta">下次复习：今天</p>
+                                    </div>
+                                    <div class="card-actions">
+                                        <button class="btn-master">掌握</button>
+                                        <button class="btn-forget">忘记</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片库页面 -->
+            <div class="prototype-container">
+                <h2 class="text-xl font-semibold mb-4">卡片库</h2>
+                <div class="iphone-frame">
+                    <div class="iphone-notch"></div>
+                    <div class="iphone-screen">
+                        <div class="app-header">
+                            <h1 class="text-lg font-semibold">卡片库</h1>
+                            <button class="add-btn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="search-bar">
+                            <input type="text" placeholder="搜索知识点或答案" class="search-input">
+                            <button class="clear-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="card-list">
+                            <div class="card-item">
+                                <div class="card-info">
+                                    <h3 class="card-title">JavaScript 闭包的概念</h3>
+                                    <p class="card-meta">创建于 2024-03-20</p>
+                                    <p class="card-meta">已复习 3 次</p>
+                                    <p class="card-meta">下次复习：今天</p>
+                                </div>
+                            </div>
+                            <div class="card-item">
+                                <div class="card-info">
+                                    <h3 class="card-title">Vue.js 生命周期钩子</h3>
+                                    <p class="card-meta">创建于 2024-03-19</p>
+                                    <p class="card-meta">已复习 2 次</p>
+                                    <p class="card-meta">下次复习：明天</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 新增卡片页面 -->
+            <div class="prototype-container">
+                <h2 class="text-xl font-semibold mb-4">新增卡片</h2>
+                <div class="iphone-frame">
+                    <div class="iphone-notch"></div>
+                    <div class="iphone-screen">
+                        <div class="app-header">
+                            <button class="back-btn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <h1 class="text-lg font-semibold">新增卡片</h1>
+                            <button class="save-btn">保存</button>
+                        </div>
+                        <div class="card-form">
+                            <div class="form-group">
+                                <label>知识点</label>
+                                <textarea placeholder="请输入知识点（最多100字）" maxlength="100"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>答案</label>
+                                <textarea placeholder="请输入答案（最多500字）" maxlength="500"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置页面 -->
+            <div class="prototype-container">
+                <h2 class="text-xl font-semibold mb-4">设置</h2>
+                <div class="iphone-frame">
+                    <div class="iphone-notch"></div>
+                    <div class="iphone-screen">
+                        <div class="app-header">
+                            <h1 class="text-lg font-semibold">设置</h1>
+                        </div>
+                        <div class="settings-list">
+                            <div class="settings-group">
+                                <h3 class="settings-title">复习规则设置</h3>
+                                <div class="settings-description">
+                                    设置每次复习后的间隔天数。系统会根据复习次数自动计算下次复习时间。
+                                </div>
+                                <div class="interval-rules">
+                                    <div class="rule-item">
+                                        <span>第1次</span>
+                                        <input type="number" value="1" min="1" max="365">
+                                        <span>天</span>
+                                    </div>
+                                    <div class="rule-item">
+                                        <span>第2次</span>
+                                        <input type="number" value="1" min="1" max="365">
+                                        <span>天</span>
+                                    </div>
+                                    <div class="rule-item">
+                                        <span>第3次</span>
+                                        <input type="number" value="1" min="1" max="365">
+                                        <span>天</span>
+                                    </div>
+                                </div>
+                                <div class="settings-actions">
+                                    <button class="btn-default">恢复默认</button>
+                                    <button class="btn-save">保存</button>
+                                    <button class="btn-reset">重置</button>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <h3 class="settings-title">账号设置</h3>
+                                <button class="btn-logout">退出登录</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/main.js"></script>
+</body>
+</html> 

@@ -25,6 +25,7 @@ import {
 } from 'vant'
 import 'vant/lib/index.css'
 import './styles/index.scss'
+import '@fortawesome/fontawesome-free/css/all.min.css'
 
 const app = createApp(App)
 const pinia = createPinia()
