@@ -24,4 +24,20 @@ body {
 // 移动端适配
 html {
   font-size: calc(100vw / 375 * 37.5);
+}
+
+// 强化 Vant 日历"今天"高亮样式（全局生效）
+.van-calendar__day.calendar-today {
+  background: #e6f7ff !important;
+  color: #1890ff !important;
+  border-radius: 8px !important;
+  font-weight: bold !important;
+  box-shadow: 0 0 0 2px #1890ff22 !important;
+}
+.van-calendar__selected-day.calendar-today {
+  background: linear-gradient(135deg, #1989fa 60%, #e6f7ff 100%) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-weight: bold !important;
+  box-shadow: 0 0 0 2px #1989fa55 !important;
 } 

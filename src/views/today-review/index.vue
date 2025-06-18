@@ -1,6 +1,6 @@
 <template>
   <div class="today-review">
-    <!-- 导航栏 -->
+    <!-- 顶部导航栏 -->
     <van-nav-bar
       title="今日复习"
       fixed
@@ -13,144 +13,90 @@
       </template>
     </van-nav-bar>
 
-    <!-- 复习卡片区域 -->
-    <div v-if="todayCards.length > 0" class="card-container">
-      <van-swipe
-        :loop="false"
-        :show-indicators="false"
-        @change="handleCardChange"
-      >
-        <van-swipe-item v-for="card in todayCards" :key="card.id">
-          <div class="review-card" :class="{ 'is-flipped': card.isFlipped }">
-            <!-- 卡片正面 -->
-            <div class="card-face card-front" @click="handleFlip(card)">
-              <div class="card-content">
-                <span class="card-label">知识点</span>
-                <div class="card-text-wrapper">
-                  <p class="card-text">{{ card.title }}</p>
-                </div>
-              </div>
-              <div class="card-footer">
-                <div class="card-info">
-                  <div class="info-item">
-                    <van-icon name="clock-o" />
-                    <span>复习次数：{{ card.reviewCount }}</span>
-                  </div>
-                  <div class="info-item" @click.stop>
-                    <NextReviewTime 
-                      :card="card" 
-                      @update="handleReviewTimeUpdate" 
-                    />
-                  </div>
-                </div>
-                <div class="card-actions">
-                  <van-button 
-                    type="success" 
-                    size="small"
-                    class="action-btn success-btn" 
-                    @click.stop="handleMastered(card)"
-                  >
-                    <template #icon>
-                      <van-icon name="checked" />
-                    </template>
-                    掌握
-                  </van-button>
-                  <van-button 
-                    type="danger" 
-                    size="small"
-                    class="action-btn danger-btn" 
-                    @click.stop="handleForgotten(card)"
-                  >
-                    <template #icon>
-                      <van-icon name="cross" />
-                    </template>
-                    忘记
-                  </van-button>
-                </div>
-              </div>
-            </div>
-            <!-- 卡片反面 -->
-            <div class="card-face card-back" @click="handleFlip(card)">
-              <div class="card-content">
-                <span class="card-label">答案</span>
-                <div class="card-text-wrapper">
-                  <p class="card-text">{{ card.answer }}</p>
-                </div>
-              </div>
-              <div class="card-footer">
-                <div class="card-info">
-                  <div class="info-item">
-                    <van-icon name="clock-o" />
-                    <span>复习次数：{{ card.reviewCount }}</span>
-                  </div>
-                  <div class="info-item" @click.stop>
-                    <NextReviewTime 
-                      :card="card" 
-                      @update="handleReviewTimeUpdate" 
-                    />
-                  </div>
-                </div>
-                <div class="card-actions">
-                  <van-button 
-                    type="success" 
-                    size="small"
-                    class="action-btn success-btn" 
-                    @click.stop="handleMastered(card)"
-                  >
-                    <template #icon>
-                      <van-icon name="checked" />
-                    </template>
-                    掌握
-                  </van-button>
-                  <van-button 
-                    type="danger" 
-                    size="small"
-                    class="action-btn danger-btn" 
-                    @click.stop="handleForgotten(card)"
-                  >
-                    <template #icon>
-                      <van-icon name="cross" />
-                    </template>
-                    忘记
-                  </van-button>
-                </div>
-              </div>
-            </div>
+    <div class="review-main">
+      <template v-if="todayCards.length > 0">
+        <!-- 进度条 -->
+        <div class="progress-bar">
+          <div class="progress-label">
+            <i class="fas fa-layer-group"></i>
+            <span>{{ currentIndex + 1 }} / {{ todayCards.length }}</span>
           </div>
-        </van-swipe-item>
-      </van-swipe>
+          <div class="progress-track">
+            <div class="progress-inner" :style="{ width: ((currentIndex + 1) / todayCards.length * 100) + '%' }"></div>
+          </div>
+        </div>
 
-      <!-- 进度指示器 -->
-      <div class="progress-indicator">
-        <span class="current">{{ currentIndex + 1 }}</span>
-        <span class="separator">/</span>
-        <span class="total">{{ todayCards.length }}</span>
-      </div>
-    </div>
+        <!-- 卡片区域（仅标题、知识点/答案，正反面切换） -->
+        <div class="card-container">
+          <van-swipe
+            :loop="false"
+            :show-indicators="false"
+            @change="handleCardChange"
+          >
+            <van-swipe-item v-for="card in todayCards" :key="card.id">
+              <div class="review-card" :class="{ 'is-flipped': card.isFlipped }">
+                <!-- 卡片正面 -->
+                <div class="card-face card-front" @click="handleFlip(card)">
+                  <div class="card-content-main">知识点</div>
+                  <div class="card-title">{{ card.title }}</div>
+                </div>
+                <!-- 卡片反面 -->
+                <div class="card-face card-back" @click="handleFlip(card)">
+                  <div class="card-content-main">答案</div>
+                  <div class="card-title">{{ card.answer }}</div>
+                </div>
+              </div>
+            </van-swipe-item>
+          </van-swipe>
+        </div>
 
-    <!-- 无卡片提示 -->
-    <van-empty
-      v-else
-      class="custom-empty"
-      description="今天没有需要复习的卡片"
-    >
-      <template #image>
-        <van-icon name="smile-o" size="64" color="#8696a7" />
+        <!-- 复习信息区（卡片下方） -->
+        <div class="review-meta-bar">
+          <div class="meta-item">
+            <i class="fas fa-history"></i>
+            <span>复习次数：</span>{{ todayCards[currentIndex]?.reviewCount || 0 }}
+          </div>
+          <div class="meta-item">
+            <NextReviewTime
+              v-if="todayCards[currentIndex]"
+              :card="todayCards[currentIndex]"
+              @update="fetchTodayCards"
+            />
+          </div>
+        </div>
+
+        <!-- 操作按钮区 -->
+        <div class="review-actions">
+          <van-button 
+            type="danger" 
+            size="large"
+            class="action-btn danger-btn" 
+            @click="handleForgotten(todayCards[currentIndex])"
+          >
+            <i class="fas fa-times-circle"></i> 忘记
+          </van-button>
+          <van-button 
+            type="success" 
+            size="large"
+            class="action-btn success-btn" 
+            @click="handleMastered(todayCards[currentIndex])"
+          >
+            <i class="fas fa-check-circle"></i> 掌握
+          </van-button>
+        </div>
       </template>
-    </van-empty>
-
-    <!-- 日期选择器弹窗 -->
-    <van-calendar
-      v-model:show="showCalendar"
-      :min-date="minDate"
-      @confirm="handleDateConfirm"
-      color="#34c759"
-      title="选择下次复习时间"
-      round
-      show-confirm
-      confirm-text="确定"
-      confirm-disabled-text="确定"
-    />
+      <template v-else>
+        <!-- 无卡片提示 -->
+        <van-empty
+          class="custom-empty"
+          description="今天没有需要复习的卡片"
+        >
+          <template #image>
+            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=120&q=80" class="empty-image" alt="empty" />
+          </template>
+        </van-empty>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -166,10 +112,9 @@ const cardStore = useCardStore()
 const todayCards = ref([])
 const currentIndex = ref(0)
 
-// 日期选择器相关
-const showCalendar = ref(false)
-const minDate = ref(new Date())
-const currentEditingCard = ref(null)
+// 配图（可根据实际业务动态生成）
+const frontImageUrl = 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80'
+const backImageUrl = 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80'
 
 // 页面激活时刷新数据
 onActivated(async () => {
@@ -183,8 +128,10 @@ onMounted(async () => {
 
 // 格式化日期
 const formatDate = (dateString) => {
+  if (!dateString) return '--'
   const date = new Date(dateString)
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  if (isNaN(date.getTime())) return '--'
+  return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`
 }
 
 // 获取今日需要复习的卡片
@@ -199,23 +146,6 @@ const fetchTodayCards = async () => {
     console.error('获取今日卡片失败:', error)
     showToast('获取今日卡片失败')
   }
-}
-
-// 计算下次复习时间
-const calculateNextReviewTime = (reviewCount) => {
-  const today = new Date()
-  let days = 1
-
-  if (reviewCount <= 3) days = 1
-  else if (reviewCount === 4) days = 2
-  else if (reviewCount === 5) days = 3
-  else if (reviewCount === 6) days = 5
-  else if (reviewCount <= 8) days = 7
-  else if (reviewCount <= 10) days = 14
-  else if (reviewCount <= 12) days = 30
-  else days = 60
-
-  return new Date(today.setDate(today.getDate() + days))
 }
 
 // 处理卡片翻转
@@ -261,62 +191,6 @@ const handleAdd = () => {
     query: { source: 'review' }
   })
 }
-
-// 处理点击日期
-const handleSelectDate = (card) => {
-  currentEditingCard.value = card
-  showCalendar.value = true
-}
-
-// 处理日期确认
-const handleDateConfirm = async (date) => {
-  if (!currentEditingCard.value) return
-  
-  try {
-    await cardStore.updateNextReviewTime(currentEditingCard.value.id, date.toISOString())
-    
-    // 关闭日历选择器
-    showCalendar.value = false
-    
-    // 刷新卡片数据
-    await fetchTodayCards()
-    
-    // 如果当前卡片被移出今日复习列表（因为选择了未来日期）
-    if (todayCards.value.length === 0) {
-      showSuccessToast('已更新复习时间，今日无需复习')
-    } else {
-      // 如果当前卡片是最后一张，且被移出列表，将索引调整到最后一张
-      if (currentIndex.value >= todayCards.value.length) {
-        currentIndex.value = todayCards.value.length - 1
-      }
-      showSuccessToast('下次复习时间已更新')
-    }
-    
-    // 重置当前编辑的卡片
-    currentEditingCard.value = null
-  } catch (error) {
-    console.error('更新复习时间失败:', error)
-    showToast({
-      type: 'fail',
-      message: '更新失败'
-    })
-  }
-}
-
-// 处理复习时间更新
-const handleReviewTimeUpdate = async () => {
-  // 重新获取今日待复习卡片
-  await fetchTodayCards()
-  
-  // 如果当前没有卡片了，重置索引
-  if (todayCards.value.length === 0) {
-    currentIndex.value = 0
-  }
-  // 如果当前索引超出范围，调整到最后一张卡片
-  else if (currentIndex.value >= todayCards.value.length) {
-    currentIndex.value = todayCards.value.length - 1
-  }
-}
 </script>
 
 <style lang="scss" scoped>
@@ -342,15 +216,61 @@ const handleReviewTimeUpdate = async () => {
       font-size: 24px;
     }
   }
+  .review-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 0;
+    padding-bottom: 0;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+.progress-bar {
+  width: 100%;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  .progress-label {
+    font-size: 15px;
+    color: #338aff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+  }
+  .progress-track {
+    flex: 1;
+    height: 8px;
+    background: #e3eaf1;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-left: 8px;
+    .progress-inner {
+      height: 100%;
+      background: linear-gradient(90deg, #338aff 0%, #34c759 100%);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+  }
 }
 
 .card-container {
-  flex: 1;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 66vh;
-  min-height: 320px;
+  height: 44vh;
+  min-height: 220px;
+  max-height: 52vh;
+  margin-top: 8px;
+  margin-bottom: 0;
   position: relative;
   :deep(.van-swipe) {
     height: 100%;
@@ -368,18 +288,20 @@ const handleReviewTimeUpdate = async () => {
   width: 100%;
   max-width: 420px;
   height: 100%;
-  min-height: 360px;
+  min-height: 220px;
   position: relative;
   background: #fff;
   border-radius: 20px;
-  box-shadow: 0 4px 24px 0 rgba(51,138,255,0.06);
+  box-shadow: 0 4px 24px 0 rgba(51,138,255,0.08);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 48px 28px 32px 28px;
+  align-items: center;
+  padding: 0 28px;
   transition: box-shadow 0.2s;
   border: 1.5px solid #e3eaf1;
   perspective: 1200px;
+  overflow: hidden;
   .card-face {
     position: absolute;
     width: 100%;
@@ -391,9 +313,11 @@ const handleReviewTimeUpdate = async () => {
     padding: 0;
     display: flex;
     flex-direction: column;
+    align-items: center;
     box-shadow: none;
     backface-visibility: hidden;
     transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+    cursor: pointer;
   }
   .card-front {
     background: #fff;
@@ -412,120 +336,73 @@ const handleReviewTimeUpdate = async () => {
     transform: rotateY(0deg);
     z-index: 3;
   }
-}
-
-.card-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  .card-label {
-    font-size: 13px;
-    color: #338aff;
-    margin-bottom: 18px;
-    font-weight: 600;
+  .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 12px;
+    text-align: center;
     letter-spacing: 1px;
   }
-  .card-text-wrapper {
-    flex: 1;
+  .card-content-main {
+    font-size: 22px;
+    line-height: 1.7;
+    color: #338aff;
+    text-align: center;
+    font-weight: 500;
+    word-break: break-word;
+    margin-bottom: 12px;
+  }
+}
+
+.review-meta-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 18px 0 0 0;
+  padding: 0 12px;
+  .meta-item {
+    font-size: 15px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.review-actions {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin: 32px 0 0 0;
+  padding: 0 24px 0 24px;
+  .action-btn {
+    min-width: 100px;
+    max-width: 160px;
+    flex: 0 1 auto;
+    height: 44px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 22px;
+    border: none;
+    box-shadow: none;
+    padding: 0 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    min-height: 60px;
-    margin-bottom: 32px;
-  }
-  .card-text {
-    font-size: 22px;
-    line-height: 1.7;
-    color: #222;
-    text-align: center;
-    margin: 0;
-    padding: 0 8px;
-    font-weight: 500;
-    word-break: break-word;
-  }
-}
-
-.card-footer {
-  padding-bottom: 32px;
-  padding-left: 16px;
-  padding-right: 16px;
-  box-sizing: border-box;
-  margin-top: 32px;
-  padding-top: 0;
-  .card-info {
-    margin-bottom: 28px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    .info-item {
-      display: flex;
-      align-items: center;
-      color: #b0b8c1;
-      font-size: 13px;
-      .van-icon {
-        margin-right: 4px;
-        font-size: 15px;
-        color: #b0b8c1;
-      }
-      .created-at {
-        margin-left: 4px;
-      }
+    i {
+      font-size: 20px;
+      margin-right: 6px;
     }
-  }
-  .card-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 24px;
-    margin-bottom: 0;
-    .action-btn {
-      flex: 1;
-      height: 40px;
-      font-size: 15px;
-      font-weight: 600;
-      border-radius: 20px;
-      border: none;
-      box-shadow: none;
-      :deep(.van-icon) {
-        font-size: 18px;
-        margin-right: 4px;
-      }
-      &.success-btn {
-        background: #338aff;
-        color: #fff;
-      }
-      &.danger-btn {
-        background: #e3eaf1;
-        color: #338aff;
-      }
+    &.success-btn {
+      background: #338aff;
+      color: #fff;
     }
-  }
-}
-
-.progress-indicator {
-  position: absolute;
-  bottom: 200px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #e3eaf1;
-  color: #338aff;
-  padding: 4px 18px;
-  border-radius: 16px;
-  font-size: 14px;
-  font-weight: 600;
-  z-index: 10;
-  box-shadow: none;
-  .current {
-    color: #338aff;
-  }
-  .separator {
-    margin: 0 4px;
-    opacity: 0.7;
-  }
-  .total {
-    opacity: 0.7;
+    &.danger-btn {
+      background: #e3eaf1;
+      color: #338aff;
+    }
   }
 }
 
@@ -545,20 +422,6 @@ const handleReviewTimeUpdate = async () => {
     border-radius: 60px;
     object-fit: cover;
     box-shadow: 0 8px 16px rgba(51,138,255,0.08);
-  }
-}
-
-.meta-info {
-  margin-top: 16px;
-  font-size: 14px;
-  color: #666;
-  
-  > div {
-    margin-bottom: 8px;
-    
-    &:last-child {
-      margin-bottom: 0;
-    }
   }
 }
 </style> 
