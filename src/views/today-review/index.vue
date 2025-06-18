@@ -54,7 +54,7 @@
         <div class="review-meta-bar">
           <div class="meta-item">
             <i class="fas fa-history"></i>
-            <span>复习次数：</span>{{ todayCards[currentIndex]?.reviewCount || 0 }}
+            <span>已复习 {{ todayCards[currentIndex]?.reviewCount || 0 }} 次</span>
           </div>
           <div class="meta-item">
             <NextReviewTime
@@ -106,6 +106,7 @@ import { useRouter } from 'vue-router'
 import { showSuccessToast, showToast, Swipe, SwipeItem } from 'vant'
 import { useCardStore } from '@/store/card'
 import NextReviewTime from '@/components/common/NextReviewTime.vue'
+import { getRelativeTime } from '@/utils/date.js'
 
 const router = useRouter()
 const cardStore = useCardStore()

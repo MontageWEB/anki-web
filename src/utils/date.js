@@ -37,49 +37,31 @@ export function formatDate(date, format = 'YYYY-MM-DD') {
 }
 
 /**
- * 获取相对时间描述
- * @param {Date|string|number} date 日期对象/日期字符串/时间戳
+ * 计算目标日期与今天的相对时间（天/周/月/年后）
+ * @param {string|Date} targetDate 目标日期（ISO字符串或Date对象）
  * @returns {string} 相对时间描述
  */
-export function getRelativeTime(date) {
-  const now = new Date()
-  const target = new Date(date)
-  const diff = now - target
-  
-  // 转换为秒
-  const seconds = Math.floor(diff / 1000)
-  
-  if (seconds < 60) {
-    return '刚刚'
+export function getRelativeTime(targetDate) {
+  const now = new Date();
+  const date = new Date(targetDate);
+  // 清除时分秒，保证天数计算准确
+  now.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+
+  const diffMs = date - now;
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return '已过期';
+  if (diffDays === 0) return '今天';
+  if (diffDays < 7) {
+    return `${diffDays}天后`;
+  } else if (diffDays < 28) {
+    return `${Math.round(diffDays / 7)}周后`;
+  } else if (diffDays < 365) {
+    return `${Math.round(diffDays / 30)}月后`;
+  } else {
+    return `${Math.round(diffDays / 365)}年后`;
   }
-  
-  // 转换为分钟
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) {
-    return `${minutes}分钟前`
-  }
-  
-  // 转换为小时
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) {
-    return `${hours}小时前`
-  }
-  
-  // 转换为天
-  const days = Math.floor(hours / 24)
-  if (days < 30) {
-    return `${days}天前`
-  }
-  
-  // 转换为月
-  const months = Math.floor(days / 30)
-  if (months < 12) {
-    return `${months}个月前`
-  }
-  
-  // 转换为年
-  const years = Math.floor(months / 12)
-  return `${years}年前`
 }
 
 /**

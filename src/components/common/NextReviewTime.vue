@@ -1,7 +1,7 @@
 <template>
   <div class="next-review-time" @click.stop="handleClick">
     <van-icon name="calendar-o" />
-    <span class="time-text">下次复习：{{ formattedDate }}</span>
+    <span class="time-text">下次复习：{{ relativeDate }}</span>
   </div>
 
   <!-- 日期选择器弹窗 -->
@@ -27,6 +27,7 @@
 import { ref, computed } from 'vue'
 import { showSuccessToast, showToast } from 'vant'
 import { useCardStore } from '@/store/card'
+import { getRelativeTime } from '@/utils/date.js'
 
 const cardStore = useCardStore()
 
@@ -46,33 +47,9 @@ const showCalendar = ref(false)
 const minDate = new Date(2020, 0, 1)
 
 // 格式化日期
-const formattedDate = computed(() => {
-  if (!props.card.nextReviewTime) {
-    return '未设置'
-  }
-  
-  try {
-    // 处理日期字符串，移除可能存在的 +00:00Z 后缀
-    const dateStr = props.card.nextReviewTime.replace('+00:00Z', 'Z')
-    const date = new Date(dateStr)
-    
-    if (isNaN(date.getTime())) {
-      return '日期无效'
-    }
-    
-    // 使用 Intl.DateTimeFormat 来格式化日期，这样可以正确处理时区
-    const formatter = new Intl.DateTimeFormat('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      timeZone: 'Asia/Shanghai'
-    })
-    
-    return formatter.format(date)
-  } catch (error) {
-    console.error('日期格式化错误:', error)
-    return '日期无效'
-  }
+const relativeDate = computed(() => {
+  if (!props.card.nextReviewTime) return '未设置'
+  return getRelativeTime(props.card.nextReviewTime)
 })
 
 // 日历默认选中日期（卡片的下次复习时间）
