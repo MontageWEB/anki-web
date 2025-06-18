@@ -1,5 +1,12 @@
 <script setup>
 import TabBar from '@/components/common/TabBar.vue'
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+
+const route = useRoute()
+// 需要显示 TabBar 的一级页面路径
+const tabBarPages = ['/today-review', '/card/list', '/settings']
+const showTabBar = computed(() => tabBarPages.includes(route.path))
 </script>
 
 <template>
@@ -7,7 +14,7 @@ import TabBar from '@/components/common/TabBar.vue'
     <main class="main">
       <router-view></router-view>
     </main>
-    <TabBar />
+    <TabBar v-if="showTabBar" />
   </div>
 </template>
 
