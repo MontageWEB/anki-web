@@ -60,6 +60,19 @@
           />
         </div>
       </div>
+      <div class="card-info">
+        <div class="info-item">
+          <span class="label">创建时间</span>
+          <span class="value">{{ card.createdAt ? card.createdAt : '--' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">已复习次数</span>
+          <span class="value">{{ card.reviewCount != null ? card.reviewCount + '次' : '--' }}</span>
+        </div>
+        <div class="info-item">
+          <NextReviewTime v-if="card.id" :card="card" @update="$emit('save', card)" />
+        </div>
+      </div>
     </div>
   </van-popup>
 </template>
@@ -67,6 +80,7 @@
 <script setup>
 import { reactive, watch, ref } from 'vue'
 import { showToast } from 'vant'
+import NextReviewTime from '@/components/common/NextReviewTime.vue'
 
 const props = defineProps({
   show: Boolean,
@@ -176,6 +190,21 @@ function onDelete() {
       font-size: 14px;
       color: $color-text-secondary;
       margin-bottom: 8px;
+    }
+  }
+  .card-info {
+    margin-top: 24px;
+    .info-item {
+      margin-bottom: 12px;
+      .label {
+        font-size: 14px;
+        color: $color-text-secondary;
+        margin-right: 8px;
+      }
+      .value {
+        font-size: 14px;
+        color: $color-text-primary;
+      }
     }
   }
 }

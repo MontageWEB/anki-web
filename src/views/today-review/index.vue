@@ -112,7 +112,7 @@
     <EditCardDialog
       v-model:show="showEditPopup"
       :card="editCard"
-      :showDelete="false"
+      :showDelete="true"
       @save="handleEditSave"
       @cancel="handleEditCancel"
       @delete="handleEditDelete"
@@ -126,7 +126,7 @@ import { useRouter } from 'vue-router'
 import { showSuccessToast, showToast, Swipe, SwipeItem } from 'vant'
 import { useCardStore } from '@/store/card'
 import NextReviewTime from '@/components/common/NextReviewTime.vue'
-import { getRelativeTime } from '@/utils/date.js'
+import { getRelativeTime, formatDateYMD } from '@/utils/date.js'
 import EditCardDialog from '@/components/business/EditCardDialog.vue'
 
 const router = useRouter()
@@ -217,15 +217,34 @@ const handleAdd = () => {
 }
 
 function openEdit(card) {
-  editCard.value = { ...card }
+  editCard.value = {
+    ...card,
+    createdAt: formatDateYMD(card.createdAt),
+    reviewCount: card.reviewCount ?? 0,
+    nextReviewTime: card.nextReviewTime || card.next_review_time || card.next_reviewTime || ''
+  }
   showEditPopup.value = true
 }
 
-function handleEditSave(card) {
-  // 这里可调用API保存，保存后刷新卡片内容
-  showSuccessToast('保存成功（示例）')
-  showEditPopup.value = false
-  // 可选：刷新卡片内容
+function handleEditSave(data) {
+  if (!data.title.trim()) {
+    showToast('请输入知识点')
+    return
+  }
+  if (!data.answer.trim()) {
+    showToast('请输入答案')
+    return
+  }
+  cardStore.updateCard(data.id, {
+    title: data.title.trim(),
+    answer: data.answer.trim()
+  }).then(() => {
+    showSuccessToast('保存成功')
+    showEditPopup.value = false
+    fetchTodayCards()
+  }).catch(() => {
+    showToast('保存失败')
+  })
 }
 
 function handleEditCancel() {
@@ -233,8 +252,15 @@ function handleEditCancel() {
 }
 
 function handleEditDelete(id) {
-  showSuccessToast('删除功能可接入')
-  showEditPopup.value = false
+  cardStore.deleteCard(id).then(() => {
+    showSuccessToast('删除成功')
+    showEditPopup.value = false
+    fetchTodayCards().then(() => {
+      currentIndex.value = 0
+    })
+  }).catch(() => {
+    showToast('删除失败')
+  })
 }
 </script>
 
@@ -268,7 +294,7 @@ function handleEditDelete(id) {
     justify-content: flex-start;
     align-items: center;
     min-height: 0;
-    padding-bottom: 0;
+    padding: 0 16px;
     width: 100%;
     max-width: 480px;
     margin: 0 auto;

@@ -1,6 +1,6 @@
 <template>
   <div class="settings-page">
-    <van-nav-bar title="设置" />
+    <van-nav-bar title="设置" fixed :placeholder="true" />
     
     <!-- 复习间隔设置 -->
     <div class="settings-section">
@@ -54,9 +54,13 @@ const handleLogout = () => {
 
 <style lang="scss" scoped>
 .settings-page {
-  min-height: 100vh;
-  background-color: #f7f8fa;
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
   padding: 16px;
+  background: #f7f8fa;
+  display: flex;
+  flex-direction: column;
 }
 
 .settings-section {

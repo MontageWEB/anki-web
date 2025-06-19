@@ -122,4 +122,16 @@ export function getDateRange(type) {
   }
   
   return { start, end }
+}
+
+/**
+ * 格式化日期为 YYYY-MM-DD
+ * @param {string|Date} dateString 日期字符串或Date对象
+ * @returns {string} 格式化后的日期
+ */
+export function formatDateYMD(dateString) {
+  if (!dateString) return '--'
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '--'
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 } 

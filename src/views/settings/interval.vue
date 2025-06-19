@@ -4,6 +4,8 @@
       title="复习间隔规则"
       left-arrow
       @click-left="router.back()"
+      fixed
+      :placeholder="true"
     />
     <div class="content">
       <div class="section">

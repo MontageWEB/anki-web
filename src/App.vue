@@ -40,8 +40,11 @@ body {
 
 .main {
   flex: 1;
-  padding: 20px;
-  padding-bottom: 70px; /* 为底部导航留出空间 */
+  padding: 0;
+  /* 让 main 占满剩余空间 */
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 :root {

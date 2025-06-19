@@ -5,6 +5,8 @@
       title="卡片库"
       right-text="新增"
       @click-right="handleAdd"
+      fixed
+      :placeholder="true"
     />
 
     <!-- 搜索栏 -->
@@ -30,7 +32,7 @@
           class="list-item"
         >
           <!-- 卡片内容 -->
-          <div class="card-content" @click="showDetail(item)">
+          <div class="card-content" @click="showEdit(item)">
             <div class="title">{{ item.title }}</div>
             <div class="info">
               <span class="time">创建时间：{{ formatDate(item.createdAt) }}</span>
@@ -62,122 +64,15 @@
       </template>
     </div>
 
-    <!-- 详情弹窗 -->
-    <van-popup
-      v-model:show="showDetailPopup"
-      position="bottom"
-      round
-      class="detail-popup"
-    >
-      <div class="popup-header">
-        <div class="left">
-          <van-icon name="arrow-left" @click="showDetailPopup = false" />
-          <span class="title">卡片详情</span>
-        </div>
-        <van-button
-          plain
-          type="primary"
-          size="small"
-          @click="showEdit(currentCard)"
-        >
-          编辑
-        </van-button>
-      </div>
-      <div class="popup-content">
-        <!-- 知识点 -->
-        <div class="section">
-          <div class="section-title">知识点</div>
-          <div class="section-content">{{ currentCard.title }}</div>
-        </div>
-        <!-- 答案 -->
-        <div class="section">
-          <div class="section-title">答案</div>
-          <div class="section-content">{{ currentCard.answer }}</div>
-        </div>
-        <!-- 卡片信息 -->
-        <div class="card-info">
-          <div class="info-item">
-            <span class="label">创建时间</span>
-            <span class="value">{{ formatDate(currentCard.createdAt) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">已复习次数</span>
-            <span class="value">{{ currentCard.reviewCount }}次</span>
-          </div>
-          <div class="info-item">
-            <NextReviewTime 
-              v-if="currentCard.id" 
-              :card="currentCard" 
-              @update="handleDetailReviewTimeUpdate" 
-            />
-          </div>
-        </div>
-      </div>
-    </van-popup>
-
     <!-- 编辑弹窗 -->
-    <van-popup
+    <EditCardDialog
       v-model:show="showEditPopup"
-      position="bottom"
-      round
-      class="edit-popup"
-    >
-      <div class="popup-header">
-        <div class="left">
-          <van-icon name="arrow-left" @click="handleEditBack" />
-          <span class="title">编辑卡片</span>
-        </div>
-        <div class="right">
-          <van-button
-            plain
-            type="danger"
-            size="small"
-            class="delete-btn"
-            @click="handleDelete(editForm.id)"
-          >
-            删除
-          </van-button>
-          <van-button
-            plain
-            type="primary"
-            size="small"
-            @click="handleSave"
-          >
-            保存
-          </van-button>
-        </div>
-      </div>
-      <div class="popup-content">
-        <div class="form">
-          <div class="form-item">
-            <div class="label">知识点</div>
-            <van-field
-              v-model="editForm.title"
-              type="textarea"
-              placeholder="请输入知识点"
-              :rules="[{ required: true, message: '请输入知识点' }]"
-              rows="3"
-              autosize
-              maxlength="100"
-              show-word-limit
-            />
-          </div>
-          <div class="form-item">
-            <div class="label">答案</div>
-            <van-field
-              v-model="editForm.answer"
-              type="textarea"
-              placeholder="请输入答案"
-              :rules="[{ required: true, message: '请输入答案' }]"
-              rows="6"
-              autosize
-              maxlength="500"
-              show-word-limit
-            />
-          </div>
-        </div>
-      </div>
-    </van-popup>
+      :card="editForm"
+      :showDelete="true"
+      @save="handleSave"
+      @cancel="handleEditBack"
+      @delete="handleDelete"
+    />
   </div>
 </template>
 
@@ -185,14 +80,16 @@
 import { defineComponent, ref, computed, onMounted, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast, showDialog, Popup } from 'vant'
-import { formatDate } from '@/utils/date'
+import { formatDate, formatDateYMD } from '@/utils/date'
 import { useCardStore } from '@/store/card'
 import NextReviewTime from '@/components/common/NextReviewTime.vue'
+import EditCardDialog from '@/components/business/EditCardDialog.vue'
 
 export default defineComponent({
   name: 'CardList',
   components: {
-    NextReviewTime
+    NextReviewTime,
+    EditCardDialog
   },
   setup() {
     const router = useRouter()
@@ -200,9 +97,7 @@ export default defineComponent({
     const searchText = ref('')
 
     // 弹窗控制
-    const showDetailPopup = ref(false)
     const showEditPopup = ref(false)
-    const currentCard = ref({})
     const editForm = ref({
       id: '',
       title: '',
@@ -249,62 +144,43 @@ export default defineComponent({
       })
     }
 
-    // 显示详情
-    const showDetail = async (item) => {
-      try {
-        const card = await cardStore.getCardDetail(item.id)
-        currentCard.value = card
-        showDetailPopup.value = true
-      } catch (error) {
-        console.error('获取卡片详情失败:', error)
-      }
-    }
-
     // 显示编辑
     const showEdit = (item) => {
-      editForm.value = { ...item }
-      showEditPopup.value = true
-      // 如果是从详情页进入编辑，关闭详情弹窗
-      if (showDetailPopup.value) {
-        showDetailPopup.value = false
+      editForm.value = {
+        ...item,
+        createdAt: formatDateYMD(item.createdAt),
+        reviewCount: item.reviewCount ?? 0,
+        nextReviewTime: item.nextReviewTime || item.next_review_time || item.next_reviewTime || ''
       }
+      showEditPopup.value = true
     }
 
     // 编辑页返回
     const handleEditBack = () => {
       showEditPopup.value = false
-      // 如果是从详情页进入编辑，返回详情页
-      if (currentCard.value.id === editForm.value.id) {
-        showDetailPopup.value = true
-      }
     }
 
     // 保存编辑
-    const handleSave = async () => {
+    const handleSave = async (data) => {
       // 表单验证
-      if (!editForm.value.title.trim()) {
+      if (!data.title.trim()) {
         showToast('请输入知识点')
         return
       }
-      if (!editForm.value.answer.trim()) {
+      if (!data.answer.trim()) {
         showToast('请输入答案')
         return
       }
-
       try {
         // 更新卡片
-        const updatedCard = await cardStore.updateCard(editForm.value.id, {
-          title: editForm.value.title.trim(),
-          answer: editForm.value.answer.trim()
+        const updatedCard = await cardStore.updateCard(data.id, {
+          title: data.title.trim(),
+          answer: data.answer.trim()
         })
-
         // 更新当前卡片数据
-        currentCard.value = updatedCard
-
+        editForm.value = updatedCard
         // 关闭所有弹窗
         showEditPopup.value = false
-        showDetailPopup.value = false
-
         // 显示成功提示
         showToast({
           type: 'success',
@@ -324,11 +200,8 @@ export default defineComponent({
       }).then(async () => {
         try {
           await cardStore.deleteCard(id)
-          // 如果删除的是当前正在查看的卡片，关闭所有弹窗
-          if (currentCard.value.id === id) {
-            showDetailPopup.value = false
-            showEditPopup.value = false
-          }
+          showEditPopup.value = false
+          await cardStore.initializeCards()
         } catch (error) {
           console.error('删除失败:', error)
         }
@@ -349,45 +222,24 @@ export default defineComponent({
       }
     }
 
-    // 处理详情页中的复习时间更新
-    const handleDetailReviewTimeUpdate = async () => {
-      // 重新获取卡片列表数据
-      await cardStore.initializeCards()
-      // 更新搜索结果
-      if (searchText.value) {
-        filteredList.value = cardStore.filteredCards(searchText.value)
-      } else {
-        filteredList.value = cardStore.allCards
-      }
-      // 更新当前显示的卡片
-      const updatedCard = cardStore.allCards.find(card => card.id === currentCard.value.id)
-      if (updatedCard) {
-        currentCard.value = { ...updatedCard }
-      }
-    }
-
     return {
       // 数据
       searchText,
       loading,
       filteredList,
-      showDetailPopup,
       showEditPopup,
-      currentCard,
       editForm,
 
       // 方法
       handleSearch,
       handleClear,
       handleAdd,
-      showDetail,
       showEdit,
       handleEditBack,
       handleSave,
       handleDelete,
       formatDate,
-      handleReviewTimeUpdate,
-      handleDetailReviewTimeUpdate
+      handleReviewTimeUpdate
     }
   }
 })
@@ -455,7 +307,6 @@ export default defineComponent({
   }
 }
 
-.detail-popup,
 .edit-popup {
   min-height: 60vh;
   max-height: 90vh;
