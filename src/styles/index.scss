@@ -24,7 +24,7 @@ body {
 // 移动端适配
 html {
   font-size: calc(100vw / 375 * 37.5);
-}
+} 
 
 // 强化 Vant 日历"今天"高亮样式（全局生效）
 .van-calendar__day.calendar-today {

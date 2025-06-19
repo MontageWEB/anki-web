@@ -37,14 +37,24 @@
               <div class="review-card" :class="{ 'is-flipped': card.isFlipped }">
                 <!-- 卡片正面 -->
                 <div class="card-face card-front" @click="handleFlip(card)">
-                  <div class="card-content-main">知识点</div>
-                  <div class="card-title">{{ card.title }}</div>
+                  <div class="card-title-fixed">知识点</div>
+                  <div class="card-content-scroll">
+                    <div class="card-content-text">{{ card.title }}</div>
+                  </div>
                 </div>
                 <!-- 卡片反面 -->
                 <div class="card-face card-back" @click="handleFlip(card)">
-                  <div class="card-content-main">答案</div>
-                  <div class="card-title">{{ card.answer }}</div>
+                  <div class="card-title-fixed">答案</div>
+                  <div class="card-content-scroll">
+                    <div class="card-content-text card-answer-text">{{ card.answer }}</div>
+                  </div>
                 </div>
+                <!-- 编辑按钮悬浮在右上角 -->
+                <van-icon
+                  name="edit"
+                  class="edit-entry-btn"
+                  @click.stop="openEdit(card)"
+                />
               </div>
             </van-swipe-item>
           </van-swipe>
@@ -97,6 +107,16 @@
         </van-empty>
       </template>
     </div>
+
+    <!-- 编辑弹窗复用组件 -->
+    <EditCardDialog
+      v-model:show="showEditPopup"
+      :card="editCard"
+      :showDelete="false"
+      @save="handleEditSave"
+      @cancel="handleEditCancel"
+      @delete="handleEditDelete"
+    />
   </div>
 </template>
 
@@ -107,11 +127,14 @@ import { showSuccessToast, showToast, Swipe, SwipeItem } from 'vant'
 import { useCardStore } from '@/store/card'
 import NextReviewTime from '@/components/common/NextReviewTime.vue'
 import { getRelativeTime } from '@/utils/date.js'
+import EditCardDialog from '@/components/business/EditCardDialog.vue'
 
 const router = useRouter()
 const cardStore = useCardStore()
 const todayCards = ref([])
 const currentIndex = ref(0)
+const showEditPopup = ref(false)
+const editCard = ref({})
 
 // 配图（可根据实际业务动态生成）
 const frontImageUrl = 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80'
@@ -191,6 +214,27 @@ const handleAdd = () => {
     path: '/card/create',
     query: { source: 'review' }
   })
+}
+
+function openEdit(card) {
+  editCard.value = { ...card }
+  showEditPopup.value = true
+}
+
+function handleEditSave(card) {
+  // 这里可调用API保存，保存后刷新卡片内容
+  showSuccessToast('保存成功（示例）')
+  showEditPopup.value = false
+  // 可选：刷新卡片内容
+}
+
+function handleEditCancel() {
+  showEditPopup.value = false
+}
+
+function handleEditDelete(id) {
+  showSuccessToast('删除功能可接入')
+  showEditPopup.value = false
 }
 </script>
 
@@ -338,21 +382,57 @@ const handleAdd = () => {
     z-index: 3;
   }
   .card-title {
+    display: none;
+  }
+  .card-title-fixed {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #fff;
     font-size: 18px;
     font-weight: 700;
-    color: #222;
-    margin-bottom: 12px;
-    text-align: center;
-    letter-spacing: 1px;
-  }
-  .card-content-main {
-    font-size: 22px;
-    line-height: 1.7;
     color: #338aff;
     text-align: center;
-    font-weight: 500;
+    letter-spacing: 1px;
+    padding: 12px 0 8px 0;
+    z-index: 2;
+    border-radius: 20px 20px 0 0;
+  }
+  .card-content-scroll {
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 0 18px 18px 18px;
+    box-sizing: border-box;
+    background: transparent;
+    border-radius: 0 0 12px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: #b0b8c1 #f6f8fa;
+  }
+  .card-content-scroll::-webkit-scrollbar {
+    width: 6px;
+    background: #f6f8fa;
+    border-radius: 6px;
+  }
+  .card-content-scroll::-webkit-scrollbar-thumb {
+    background: #b0b8c1;
+    border-radius: 6px;
+  }
+  .card-content-text {
+    font-size: 16px;
+    font-weight: 400;
+    color: #222;
+    text-align: left;
+    line-height: 1.7;
     word-break: break-word;
-    margin-bottom: 12px;
+    white-space: pre-line;
+  }
+  .card-answer-text {
+    font-size: 15px;
+    font-weight: 400;
+    color: #222;
+    text-align: left;
   }
 }
 
@@ -424,5 +504,25 @@ const handleAdd = () => {
     object-fit: cover;
     box-shadow: 0 8px 16px rgba(51,138,255,0.08);
   }
+}
+
+// 编辑按钮样式
+.edit-entry-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  font-size: 22px;
+  color: #338aff;
+  background: rgba(255,255,255,0.85);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(51,138,255,0.08);
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 4px;
+}
+
+.edit-entry-btn:hover {
+  background: #e3eaf1;
 }
 </style> 
