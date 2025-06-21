@@ -7,7 +7,7 @@ const ENV = import.meta.env.MODE
 
 // 不同环境的 API 地址配置
 const API_CONFIG = {
-  development: 'http://localhost:8001',
+  development: '/api',
   test: 'http://test-api.example.com',
   production: 'http://api.example.com'
 }
